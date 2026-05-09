@@ -1,0 +1,168 @@
+.panel {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e0e0e0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 8px 0;
+}
+
+.panel-subtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #aaaacc;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin: 4px 0 4px 0;
+}
+
+.panel-hint {
+  font-size: 13px;
+  color: #888;
+  margin: 4px 0;
+}
+
+.field-label {
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 6px;
+}
+
+.field-input {
+  background: #2a2a3e;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #e0e0e0;
+  padding: 6px 8px;
+  font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field-input:focus {
+  border-color: #7c6af7;
+}
+
+.field-range {
+  width: 100%;
+  accent-color: #7c6af7;
+  cursor: pointer;
+}
+
+.field-color {
+  width: 48px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 10px 0;
+}
+
+/* Template grid */
+.template-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.template-btn {
+  height: 64px;
+  border: 2px solid #444;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px;
+  transition: border-color 0.2s, transform 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+
+.template-btn:hover {
+  border-color: #7c6af7;
+  transform: scale(1.03);
+}
+
+.template-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 4px;
+  padding: 2px 6px;
+  pointer-events: none;
+}
+
+/* Effects */
+.effects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.effect-btn {
+  background: #2a2a3e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  color: #e0e0e0;
+  padding: 10px 12px;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.effect-btn:hover:not(:disabled) {
+  background: #3a3a55;
+  border-color: #7c6af7;
+}
+
+.effect-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.effect-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.effect-desc {
+  font-size: 11px;
+  color: #999;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #ccc;
+  cursor: pointer;
+}
+
+.toggle-label input[type='checkbox'] {
+  accent-color: #7c6af7;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}

@@ -1,0 +1,94 @@
+.effect-gallery {
+  width: 260px;
+  min-width: 260px;
+  background: #13131f;
+  border-right: 1px solid #252535;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.gallery-header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid #252535;
+  flex-shrink: 0;
+}
+
+.gallery-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e0e0f0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 2px 0;
+}
+
+.gallery-subtitle {
+  font-size: 11px;
+  color: #666;
+  margin: 0;
+}
+
+.gallery-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+/* ---- Effect Card ---- */
+.effect-card {
+  background: #1c1c2e;
+  border: 2px solid #2e2e44;
+  border-radius: 10px;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.18s, transform 0.12s, box-shadow 0.18s;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.effect-card:hover {
+  border-color: #7c6af7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(124, 106, 247, 0.25);
+}
+
+.effect-card.selected {
+  border-color: #a08aff;
+  box-shadow: 0 0 0 2px rgba(160, 138, 255, 0.35), 0 4px 16px rgba(124, 106, 247, 0.3);
+}
+
+.effect-card-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+}
+
+.effect-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  background: #1c1c2e;
+  border-top: 1px solid #252535;
+}
+
+.effect-card-emoji {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.effect-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d0d0e8;
+  letter-spacing: 0.03em;
+}

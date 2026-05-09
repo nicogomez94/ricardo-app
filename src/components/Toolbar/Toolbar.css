@@ -1,0 +1,81 @@
+.toolbar {
+  height: 54px;
+  background: #0d0d1a;
+  border-bottom: 1px solid #1e1e30;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+
+.toolbar-logo {
+  font-size: 22px;
+  color: #a08aff;
+}
+
+.toolbar-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e8e8f8;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.toolbar-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: #a08aff;
+  background: rgba(160, 138, 255, 0.15);
+  border: 1px solid rgba(160, 138, 255, 0.3);
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.toolbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.toolbar-hint {
+  font-size: 12px;
+  color: #555;
+  letter-spacing: 0.02em;
+}
+
+.toolbar-right {
+  flex-shrink: 0;
+}
+
+.toolbar-export-btn {
+  background: #7c6af7;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.toolbar-export-btn:hover {
+  background: #6a58e0;
+  transform: translateY(-1px);
+}
+
+.toolbar-export-btn:active {
+  transform: translateY(0);
+}
+
