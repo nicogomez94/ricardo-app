@@ -1,4 +1,5 @@
 import { darkenHex, lightenHex } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const pvcEffect = {
   id: 'pvc',
@@ -28,6 +29,30 @@ function renderPVC(canvas, text, opts = {}) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, W, H);
+
+  // Image mode: draw image with gloss + bevel overlay
+  if (opts.uploadedImage) {
+    drawFittedImage(ctx, opts.uploadedImage, W, H);
+    // Dark bevel bottom-right
+    ctx.save();
+    const bevelGrad = ctx.createLinearGradient(0, 0, W, H);
+    bevelGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    bevelGrad.addColorStop(0.55, 'rgba(0,0,0,0)');
+    bevelGrad.addColorStop(1, 'rgba(0,0,0,0.45)');
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = bevelGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    // Gloss top highlight
+    ctx.save();
+    const glossGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    glossGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+    glossGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = glossGrad;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    return;
+  }
 
   const fontStr = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
   ctx.font = fontStr;

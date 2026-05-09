@@ -6,7 +6,7 @@ import './MainCanvas.css';
 const CANVAS_W = 760;
 const CANVAS_H = 280;
 
-export default function MainCanvas({ text, fontFamily, fontSize, effectId, colors, stageRef }) {
+export default function MainCanvas({ text, fontFamily, fontSize, effectId, colors, uploadedImage, stageRef }) {
   const [effectImage, setEffectImage] = useState(null);
 
   useEffect(() => {
@@ -14,12 +14,12 @@ export default function MainCanvas({ text, fontFamily, fontSize, effectId, color
     off.width = CANVAS_W;
     off.height = CANVAS_H;
 
-    renderEffect(off, effectId, text, { fontFamily, fontSize, ...colors });
+    renderEffect(off, effectId, text, { fontFamily, fontSize, ...colors, uploadedImage });
 
     const img = new window.Image();
     img.onload = () => setEffectImage(img);
     img.src = off.toDataURL();
-  }, [text, fontFamily, fontSize, effectId, colors]);
+  }, [text, fontFamily, fontSize, effectId, colors, uploadedImage]);
 
   return (
     <div className="main-canvas-outer">

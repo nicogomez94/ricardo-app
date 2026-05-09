@@ -1,4 +1,5 @@
 import { darkenHex, lightenHex, hexToRgba } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const leatherPatchEffect = {
   id: 'leather',
@@ -50,7 +51,43 @@ function renderLeatherPatch(canvas, text, opts = {}) {
   applyLeatherGrain(ctx, W, H);
   ctx.restore();
 
-  // Stitched border
+  // Image mode: place image on leather patch with emboss treatment
+  if (opts.uploadedImage) {
+    ctx.save();
+    roundedRect(ctx, pad, pad, W - pad * 2, H - pad * 2, 10);
+    ctx.clip();
+    // Debossed shadow of image
+    ctx.save();
+    ctx.globalAlpha = 0.45;
+    const offShadow = document.createElement('canvas');
+    offShadow.width = W; offShadow.height = H;
+    const sCtx = offShadow.getContext('2d');
+    drawFittedImage(sCtx, opts.uploadedImage, W, H);
+    ctx.drawImage(offShadow, 2, 3);
+    ctx.restore();
+    // Image with warm tint
+    const offImg = document.createElement('canvas');
+    offImg.width = W; offImg.height = H;
+    const iCtx = offImg.getContext('2d');
+    drawFittedImage(iCtx, opts.uploadedImage, W, H);
+    iCtx.globalCompositeOperation = 'multiply';
+    iCtx.fillStyle = hexToRgba(primary, 0.35);
+    iCtx.fillRect(0, 0, W, H);
+    ctx.drawImage(offImg, 0, 0);
+    ctx.restore();
+    // Stitching border on top
+    ctx.save();
+    ctx.strokeStyle = hexToRgba(primary, 0.8);
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([7, 5]);
+    roundedRect(ctx, pad + 10, pad + 10, W - (pad + 10) * 2, H - (pad + 10) * 2, 5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+    return;
+  }
+
+  // Stitched border (text mode)
   ctx.save();
   ctx.strokeStyle = hexToRgba(primary, 0.8);
   ctx.lineWidth = 1.5;

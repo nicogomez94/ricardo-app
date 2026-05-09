@@ -1,4 +1,5 @@
 import { darkenHex, lightenHex, hexToRgba } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const varsityEffect = {
   id: 'varsity',
@@ -29,6 +30,33 @@ function renderVarsity(canvas, text, opts = {}) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, W, H);
+
+  // Image mode: draw image with multi-ring colored outline
+  if (opts.uploadedImage) {
+    // Build tinted silhouette for outline rings
+    const makeRing = (color, spread) => {
+      const off = document.createElement('canvas');
+      off.width = W; off.height = H;
+      const c = off.getContext('2d');
+      drawFittedImage(c, opts.uploadedImage, W, H);
+      c.globalCompositeOperation = 'source-atop';
+      c.fillStyle = color;
+      c.fillRect(0, 0, W, H);
+      return off;
+    };
+    // Outer white ring (blurred)
+    ctx.save(); ctx.filter = `blur(${8}px)`; ctx.drawImage(makeRing('#ffffff', 0), 0, 0); ctx.restore();
+    // Secondary ring
+    ctx.save(); ctx.filter = `blur(${5}px)`; ctx.drawImage(makeRing(secondary, 0), 0, 0); ctx.restore();
+    // Thin white ring
+    ctx.save(); ctx.filter = `blur(${1.5}px)`; ctx.drawImage(makeRing('#ffffff', 0), 0, 0); ctx.restore();
+    // Draw actual image in primary tint
+    const offPrimary = makeRing(primary, 0);
+    ctx.drawImage(offPrimary, 0, 0);
+    // Draw real image on top at reduced opacity for detail
+    ctx.save(); ctx.globalAlpha = 0.5; drawFittedImage(ctx, opts.uploadedImage, W, H); ctx.restore();
+    return;
+  }
 
   const fontStr = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
   ctx.font = fontStr;

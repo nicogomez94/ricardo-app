@@ -1,4 +1,5 @@
 import { darkenHex, lightenHex, hexToRgba } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const chenilleEffect = {
   id: 'chenille',
@@ -28,6 +29,37 @@ function renderChenille(canvas, text, opts = {}) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, W, H);
+
+  // Image mode: draw image with felt-blur outline treatment
+  if (opts.uploadedImage) {
+    // Blurred colored halo layers to simulate chenille border
+    const blurLayers = [
+      { blur: 10, color: darkenHex(primary, 50), alpha: 0.7 },
+      { blur: 5, color: darkenHex(primary, 25), alpha: 0.8 },
+      { blur: 2, color: primary, alpha: 0.9 },
+    ];
+    for (const layer of blurLayers) {
+      ctx.save();
+      ctx.filter = `blur(${layer.blur}px)`;
+      ctx.globalAlpha = layer.alpha;
+      // Draw image tinted by drawing a color rect then compositing
+      const offTint = document.createElement('canvas');
+      offTint.width = W; offTint.height = H;
+      const tCtx = offTint.getContext('2d');
+      drawFittedImage(tCtx, opts.uploadedImage, W, H);
+      tCtx.globalCompositeOperation = 'source-atop';
+      tCtx.fillStyle = layer.color;
+      tCtx.fillRect(0, 0, W, H);
+      ctx.drawImage(offTint, 0, 0);
+      ctx.restore();
+    }
+    // Draw actual image on top
+    ctx.save();
+    drawFittedImage(ctx, opts.uploadedImage, W, H);
+    ctx.restore();
+    applyFeltTexture(ctx, W, H, primary, null, null);
+    return;
+  }
 
   const fontStr = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
 

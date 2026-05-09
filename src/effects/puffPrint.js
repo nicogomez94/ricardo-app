@@ -1,4 +1,5 @@
 import { darkenHex, lightenHex } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const puffPrintEffect = {
   id: 'puff',
@@ -28,6 +29,44 @@ function renderPuffPrint(canvas, text, opts = {}) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, W, H);
+
+  // Image mode: draw image with puff depth shadow + highlight
+  if (opts.uploadedImage) {
+    const depth = 8;
+    for (let i = depth; i > 0; i--) {
+      ctx.save();
+      ctx.globalAlpha = 0.6;
+      ctx.filter = `blur(${i * 0.5}px)`;
+      const offD = document.createElement('canvas');
+      offD.width = W; offD.height = H;
+      const dCtx = offD.getContext('2d');
+      drawFittedImage(dCtx, opts.uploadedImage, W, H);
+      dCtx.globalCompositeOperation = 'source-atop';
+      dCtx.fillStyle = darkenHex(primary, Math.round((i / depth) * 70));
+      dCtx.fillRect(0, 0, W, H);
+      ctx.drawImage(offD, i * 0.6, i * 0.9);
+      ctx.restore();
+    }
+    // Draw image with primary tint
+    const offMain = document.createElement('canvas');
+    offMain.width = W; offMain.height = H;
+    const mCtx = offMain.getContext('2d');
+    drawFittedImage(mCtx, opts.uploadedImage, W, H);
+    ctx.drawImage(offMain, 0, 0);
+    // Top highlight
+    const offHL = document.createElement('canvas');
+    offHL.width = W; offHL.height = H;
+    const hlCtx = offHL.getContext('2d');
+    drawFittedImage(hlCtx, opts.uploadedImage, W, H);
+    hlCtx.globalCompositeOperation = 'source-atop';
+    const hlGrad = hlCtx.createLinearGradient(0, 0, 0, H * 0.6);
+    hlGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
+    hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+    hlCtx.fillStyle = hlGrad;
+    hlCtx.fillRect(0, 0, W, H);
+    ctx.drawImage(offHL, 0, 0);
+    return;
+  }
 
   const fontStr = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
   const depth = Math.round(fontSize / 8);

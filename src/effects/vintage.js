@@ -1,4 +1,5 @@
 import { darkenHex, lightenHex } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const vintageEffect = {
   id: 'vintage',
@@ -37,6 +38,21 @@ function renderVintage(canvas, text, opts = {}) {
   vignette.addColorStop(1, 'rgba(0,0,0,0.25)');
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, W, H);
+
+  // Image mode: draw image then apply vintage treatment over it
+  if (opts.uploadedImage) {
+    drawFittedImage(ctx, opts.uploadedImage, W, H);
+    // Sepia overlay
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.globalCompositeOperation = 'multiply';
+    ctx.fillStyle = '#c8860a';
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+    applyDistress(ctx, W, H);
+    applyHalftone(ctx, W, H, primary);
+    return;
+  }
 
   const fontStr = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
   ctx.font = fontStr;

@@ -1,4 +1,5 @@
 import { darkenHex } from '../utils/colorUtils.js';
+import { drawFittedImage, getImageWhiteMask } from '../utils/imageMode.js';
 
 export const rhinestoneEffect = {
   id: 'rhinestone',
@@ -29,18 +30,23 @@ function renderRhinestone(canvas, text, opts = {}) {
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, W, H);
 
-  // Render text silhouette to offscreen canvas for pixel mask
-  const off = document.createElement('canvas');
-  off.width = W;
-  off.height = H;
-  const offCtx = off.getContext('2d');
-  offCtx.font = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
-  offCtx.fillStyle = 'white';
-  offCtx.textAlign = 'center';
-  offCtx.textBaseline = 'middle';
-  offCtx.fillText(text, W / 2, H / 2);
+  // Build mask: text OR uploaded image
+  let maskCanvas;
+  if (opts.uploadedImage) {
+    maskCanvas = getImageWhiteMask(W, H, opts.uploadedImage);
+  } else {
+    maskCanvas = document.createElement('canvas');
+    maskCanvas.width = W;
+    maskCanvas.height = H;
+    const mCtx = maskCanvas.getContext('2d');
+    mCtx.font = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
+    mCtx.fillStyle = 'white';
+    mCtx.textAlign = 'center';
+    mCtx.textBaseline = 'middle';
+    mCtx.fillText(text, W / 2, H / 2);
+  }
 
-  const { data: pixels } = offCtx.getImageData(0, 0, W, H);
+  const { data: pixels } = maskCanvas.getContext('2d').getImageData(0, 0, W, H);
 
   // Hex-grid layout of rhinestones
   const r = Math.max(3, fontSize / 18);

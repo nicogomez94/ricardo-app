@@ -13,6 +13,7 @@ function App() {
     fontSize, setFontSize,
     effectId, selectEffect,
     colors, updateColor,
+    uploadedImage, setUploadedImage, clearUploadedImage,
     stageRef,
   } = useEditorState();
 
@@ -30,6 +31,7 @@ function App() {
           onSelect={selectEffect}
           userText={text}
           fontFamily={fontFamily}
+          uploadedImage={uploadedImage}
         />
 
         <main className="editor-main">
@@ -40,6 +42,7 @@ function App() {
               fontSize={fontSize}
               effectId={effectId}
               colors={colors}
+              uploadedImage={uploadedImage}
               stageRef={stageRef}
             />
           </div>
@@ -54,6 +57,9 @@ function App() {
             effectId={effectId}
             colors={colors}
             updateColor={updateColor}
+            uploadedImage={uploadedImage}
+            setUploadedImage={setUploadedImage}
+            clearUploadedImage={clearUploadedImage}
           />
         </main>
       </div>

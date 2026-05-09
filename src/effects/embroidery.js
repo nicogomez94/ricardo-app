@@ -1,4 +1,5 @@
 import { lightenHex, hexToRgba } from '../utils/colorUtils.js';
+import { drawFittedImage } from '../utils/imageMode.js';
 
 export const embroideryEffect = {
   id: 'embroidery',
@@ -73,27 +74,33 @@ function renderEmbroidery(canvas, text, opts = {}) {
     tCtx.stroke();
   }
 
-  // 2. Clip thread canvas to text shape via destination-in
+  // 2. Clip thread canvas to text/image shape via destination-in
   tCtx.globalCompositeOperation = 'destination-in';
-  tCtx.font = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
-  tCtx.fillStyle = 'white';
-  tCtx.textAlign = 'center';
-  tCtx.textBaseline = 'middle';
-  tCtx.fillText(text, W / 2, H / 2);
+  if (opts.uploadedImage) {
+    drawFittedImage(tCtx, opts.uploadedImage, W, H);
+  } else {
+    tCtx.font = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
+    tCtx.fillStyle = 'white';
+    tCtx.textAlign = 'center';
+    tCtx.textBaseline = 'middle';
+    tCtx.fillText(text, W / 2, H / 2);
+  }
 
   // 3. Composite thread pattern onto main canvas
   ctx.drawImage(threadCanvas, 0, 0);
 
-  // 4. Outline the text for definition (darker thread border)
-  ctx.save();
-  ctx.font = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.strokeStyle = lightenHex(primary, 20);
-  ctx.lineWidth = 2;
-  ctx.lineJoin = 'round';
-  ctx.strokeText(text, W / 2, H / 2);
-  ctx.restore();
+  // 4. Outline for definition (darker thread border) — only for text mode
+  if (!opts.uploadedImage) {
+    ctx.save();
+    ctx.font = `900 ${fontSize}px "${fontFamily}", Impact, Arial Black, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.strokeStyle = lightenHex(primary, 20);
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(text, W / 2, H / 2);
+    ctx.restore();
+  }
 }
 
 function roundedRect(ctx, x, y, w, h, r) {

@@ -6,7 +6,7 @@ const PREV_W = 200;
 const PREV_H = 80;
 const PREVIEW_TEXT = 'ABC';
 
-export default function EffectCard({ effect, isSelected, onSelect, userText, fontFamily }) {
+export default function EffectCard({ effect, isSelected, onSelect, userText, fontFamily, uploadedImage }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -17,8 +17,9 @@ export default function EffectCard({ effect, isSelected, onSelect, userText, fon
       fontFamily: fontFamily || 'Impact',
       fontSize: 52,
       ...effect.defaultColors,
+      uploadedImage: uploadedImage || null,
     });
-  }, [effect, userText, fontFamily]);
+  }, [effect, userText, fontFamily, uploadedImage]);
 
   return (
     <button

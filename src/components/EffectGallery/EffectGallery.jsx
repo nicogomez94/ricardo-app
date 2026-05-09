@@ -2,7 +2,7 @@ import { EFFECTS } from '../../effects/index.js';
 import EffectCard from './EffectCard.jsx';
 import './EffectGallery.css';
 
-export default function EffectGallery({ selectedEffectId, onSelect, userText, fontFamily }) {
+export default function EffectGallery({ selectedEffectId, onSelect, userText, fontFamily, uploadedImage }) {
   return (
     <aside className="effect-gallery">
       <div className="gallery-header">
@@ -18,6 +18,7 @@ export default function EffectGallery({ selectedEffectId, onSelect, userText, fo
             onSelect={onSelect}
             userText={userText}
             fontFamily={fontFamily}
+            uploadedImage={uploadedImage}
           />
         ))}
       </div>

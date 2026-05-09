@@ -7,6 +7,8 @@ export function useEditorState() {
   const [fontSize, setFontSize] = useState(110);
   const [effectId, setEffectId] = useState('rhinestone');
   const [colors, setColors] = useState(EFFECTS[0].defaultColors);
+  // uploadedImage: HTMLImageElement | null
+  const [uploadedImage, setUploadedImage] = useState(null);
   const stageRef = useRef(null);
 
   const selectEffect = (id) => {
@@ -21,6 +23,8 @@ export function useEditorState() {
     setColors((prev) => ({ ...prev, [key]: value }));
   };
 
+  const clearUploadedImage = () => setUploadedImage(null);
+
   return {
     text,
     setText,
@@ -32,6 +36,9 @@ export function useEditorState() {
     selectEffect,
     colors,
     updateColor,
+    uploadedImage,
+    setUploadedImage,
+    clearUploadedImage,
     stageRef,
   };
 }
