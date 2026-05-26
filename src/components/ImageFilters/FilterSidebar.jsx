@@ -3,6 +3,8 @@ import ImageEnhancementPanel from './ImageEnhancementPanel';
 import HalftonePanel from './HalftonePanel';
 import BackgroundRemovalPanel from './BackgroundRemovalPanel';
 import MetallicEffectsPanel from './MetallicEffectsPanel';
+import PuffPanel from './PuffPanel';
+import EmbroideryPanel from './EmbroideryPanel';
 import './FilterSidebar.css';
 
 const FILTERS = [
@@ -29,6 +31,18 @@ const FILTERS = [
     label: 'Metálico',
     icon: '✦',
     description: 'Dorado · Plateado · Cobre · Cromo',
+  },
+  {
+    id: 'puff',
+    label: 'Puff',
+    icon: '🫧',
+    description: 'Relieve inflado 3D',
+  },
+  {
+    id: 'embroidery',
+    label: 'Bordado',
+    icon: '🧵',
+    description: 'Textura de hilos sobre parche',
   },
 ];
 
@@ -78,6 +92,8 @@ export default function FilterSidebar({
       case 'halftone':    return <HalftonePanel settings={settings} onSettingsChange={onChange} />;
       case 'bgremoval':   return <BackgroundRemovalPanel settings={settings} onSettingsChange={onChange} />;
       case 'metallic':    return <MetallicEffectsPanel settings={settings} onSettingsChange={onChange} />;
+      case 'puff':        return <PuffPanel settings={settings} onSettingsChange={onChange} />;
+      case 'embroidery':  return <EmbroideryPanel settings={settings} onSettingsChange={onChange} />;
       default:            return null;
     }
   };

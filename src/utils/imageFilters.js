@@ -228,6 +228,137 @@ export function applyMetallic(source, { variant = 'gold' } = {}) {
 }
 
 /**
+ * Puff Print — simulates inflated 3D relief by stacking depth shadows + top highlight.
+ */
+export function applyPuffPrint(source, { depth = 8, highlightOpacity = 40 } = {}) {
+  const { w, h } = getSize(source);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  // Depth shadow layers (deepest first)
+  for (let i = depth; i > 0; i--) {
+    const t = i / depth; // 1 = deepest
+    ctx.save();
+    ctx.globalAlpha = 0.55 * t;
+    ctx.filter = `blur(${i * 0.35}px) brightness(${25 + 35 * (1 - t)}%)`;
+    ctx.drawImage(source, i * 0.65, i * 0.95);
+    ctx.restore();
+  }
+
+  // Main image
+  ctx.drawImage(source, 0, 0);
+
+  // Top highlight gradient clipped to image shape
+  const offHL = document.createElement('canvas');
+  offHL.width = w;
+  offHL.height = h;
+  const hlCtx = offHL.getContext('2d');
+  hlCtx.drawImage(source, 0, 0);
+  hlCtx.globalCompositeOperation = 'source-atop';
+  const hlAlpha = Math.max(0, Math.min(1, highlightOpacity / 100));
+  const hlGrad = hlCtx.createLinearGradient(0, 0, 0, h * 0.55);
+  hlGrad.addColorStop(0, `rgba(255,255,255,${hlAlpha})`);
+  hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  hlCtx.fillStyle = hlGrad;
+  hlCtx.fillRect(0, 0, w, h);
+  ctx.drawImage(offHL, 0, 0);
+
+  return canvas;
+}
+
+/**
+ * Embroidery — applies horizontal thread lines + patch background to the image.
+ */
+export function applyEmbroidery(source, {
+  threadColor = '#f5c542',
+  patchColor = '#2c5f2e',
+  lineSpacing = 4,
+} = {}) {
+  const { w, h } = getSize(source);
+
+  // Helper: hex → rgba string
+  function hexRgba(hex, alpha) {
+    const hx = hex.replace('#', '');
+    const r = parseInt(hx.slice(0, 2), 16);
+    const g = parseInt(hx.slice(2, 4), 16);
+    const b = parseInt(hx.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  // 1. Patch background
+  ctx.fillStyle = patchColor;
+  ctx.fillRect(0, 0, w, h);
+
+  // 2. Stitched border
+  const pad = Math.max(6, Math.round(Math.min(w, h) * 0.02));
+  ctx.save();
+  ctx.strokeStyle = hexRgba(threadColor, 0.65);
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([6, 5]);
+  ctx.strokeRect(pad + 8, pad + 8, w - (pad + 8) * 2, h - (pad + 8) * 2);
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // 3. Thread lines clipped to the image's alpha
+  const threadCanvas = document.createElement('canvas');
+  threadCanvas.width = w;
+  threadCanvas.height = h;
+  const tCtx = threadCanvas.getContext('2d');
+
+  const spacing = Math.max(2, Math.round(lineSpacing));
+  tCtx.strokeStyle = threadColor;
+  tCtx.lineWidth = 1.8;
+  for (let y = 0; y < h; y += spacing) {
+    tCtx.beginPath();
+    const wobble = y % (spacing * 2) === 0 ? 0.5 : -0.5;
+    tCtx.moveTo(0, y + wobble);
+    tCtx.lineTo(w, y + wobble);
+    tCtx.stroke();
+  }
+  tCtx.strokeStyle = hexRgba(threadColor, 0.25);
+  tCtx.lineWidth = 1;
+  for (let x = 0; x < w; x += spacing * 3) {
+    tCtx.beginPath();
+    tCtx.moveTo(x, 0);
+    tCtx.lineTo(x, h);
+    tCtx.stroke();
+  }
+
+  // Clip thread lines to image shape
+  tCtx.globalCompositeOperation = 'destination-in';
+  tCtx.drawImage(source, 0, 0);
+
+  ctx.drawImage(threadCanvas, 0, 0);
+
+  // 4. Subtle drop shadow for depth (draw image silhouette under thread layer)
+  const offShadow = document.createElement('canvas');
+  offShadow.width = w;
+  offShadow.height = h;
+  const sCtx = offShadow.getContext('2d');
+  sCtx.save();
+  sCtx.shadowColor = 'rgba(0,0,0,0.45)';
+  sCtx.shadowBlur = 7;
+  sCtx.shadowOffsetX = 2;
+  sCtx.shadowOffsetY = 3;
+  sCtx.drawImage(source, 0, 0);
+  sCtx.restore();
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.drawImage(offShadow, 0, 0);
+  ctx.restore();
+
+  return canvas;
+}
+
+/**
  * Route processing to the correct filter function.
  */
 export function processImage(source, filter, settings) {
@@ -236,6 +367,8 @@ export function processImage(source, filter, settings) {
     case 'halftone':    return applyHalftone(source, settings);
     case 'bgremoval':   return removeBackground(source, settings);
     case 'metallic':    return applyMetallic(source, settings);
+    case 'puff':        return applyPuffPrint(source, settings);
+    case 'embroidery':  return applyEmbroidery(source, settings);
     default:            return null;
   }
 }

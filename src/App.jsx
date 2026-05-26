@@ -18,6 +18,8 @@ const DEFAULT_SETTINGS = {
   halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light' },
   bgremoval: { tolerance: 30 },
   metallic: { variant: 'gold' },
+  puff: { depth: 8, highlightOpacity: 40 },
+  embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4 },
 };
 
 function App() {
@@ -121,6 +123,8 @@ function App() {
                   halftone: 'Semitono',
                   bgremoval: 'Quitar fondo',
                   metallic: 'Efectos metálicos',
+                  puff: 'Efecto puff',
+                  embroidery: 'Bordado',
                 }[activeFilter]}
               </span>
             </div>
