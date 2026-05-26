@@ -1,11 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
-import { resizeToCanvas, processImage } from './utils/imageFilters.js';
+import { resizeToCanvas, processImage, processImageForExport } from './utils/imageFilters.js';
 import FilterSidebar from './components/ImageFilters/FilterSidebar.jsx';
 import EditorCanvas from './components/ImageFilters/EditorCanvas.jsx';
 import './App.css';
 
 const DEFAULT_SETTINGS = {
-  enhancement: { brightness: 100, contrast: 100, saturation: 100 },
+  enhancement: {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    scale: 100,
+    vectorize: false,
+    vectorThreshold: 128,
+    vectorColor: '#000000',
+    exportQuality: 'normal',
+  },
   halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light' },
   bgremoval: { tolerance: 30 },
   metallic: { variant: 'gold' },
@@ -53,8 +62,30 @@ function App() {
     setViewMode('processed');
   }, []);
 
+  // "Aplicar mejora": bakes the current processed result as the new working base
+  const handleApply = useCallback(() => {
+    if (!workingCanvas) return;
+    const result = processImage(workingCanvas, activeFilter, filterSettings[activeFilter]);
+    if (!result) return;
+    setWorkingCanvas(result);
+    const url = result.toDataURL('image/png');
+    setOriginalDataUrl(url);
+    setProcessedDataUrl(url);
+  }, [workingCanvas, activeFilter, filterSettings]);
+
   const handleExport = () => {
-    const url = processedDataUrl || originalDataUrl;
+    if (!workingCanvas) return;
+    // Determine export scale from enhancement quality setting
+    const enh = filterSettings.enhancement;
+    const qualityScale = activeFilter === 'enhancement'
+      ? (enh.exportQuality === 'print' ? 3 : enh.exportQuality === 'hd' ? 2 : 1)
+      : 1;
+    const exportCanvas = processImageForExport(
+      workingCanvas, activeFilter, filterSettings[activeFilter], qualityScale
+    );
+    const url = exportCanvas
+      ? exportCanvas.toDataURL('image/png')
+      : (processedDataUrl || originalDataUrl);
     if (!url) return;
     const a = document.createElement('a');
     a.href = url;
@@ -118,6 +149,8 @@ function App() {
           onFilterChange={handleFilterChange}
           filterSettings={filterSettings}
           onSettingsChange={handleSettingsChange}
+          onApply={handleApply}
+          workingDimensions={workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null}
         />
 
         <EditorCanvas

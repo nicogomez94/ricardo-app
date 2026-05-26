@@ -25,21 +25,76 @@ export function resizeToCanvas(source, maxSize = 900) {
 }
 
 /**
- * Image Enhancement — brightness, contrast, saturation via CSS filters.
+ * Image Enhancement — brightness, contrast, saturation, scale, and optional
+ * basic vectorization (threshold to solid shapes) via CSS filters + pixel ops.
  */
 export function applyEnhancement(source, {
   brightness = 100,
   contrast = 100,
   saturation = 100,
+  scale = 100,
+  vectorize = false,
+  vectorThreshold = 128,
+  vectorColor = '#000000',
 } = {}) {
   const { w, h } = getSize(source);
+  const factor = Math.max(0.1, scale / 100);
+  const outW = Math.max(1, Math.round(w * factor));
+  const outH = Math.max(1, Math.round(h * factor));
+
   const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
+  canvas.width = outW;
+  canvas.height = outH;
   const ctx = canvas.getContext('2d');
-  ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-  ctx.drawImage(source, 0, 0);
-  ctx.filter = 'none';
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  // Draw source without any filter first (ctx.filter is unreliable on canvas sources)
+  ctx.drawImage(source, 0, 0, outW, outH);
+
+  // Apply brightness / contrast / saturation via pixel manipulation (reliable cross-browser)
+  if (brightness !== 100 || contrast !== 100 || saturation !== 100) {
+    const imageData = ctx.getImageData(0, 0, outW, outH);
+    const d = imageData.data;
+    const br = brightness / 100;
+    const cr = contrast / 100;
+    const sr = saturation / 100;
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i], g = d[i + 1], b = d[i + 2];
+      // Brightness
+      r *= br; g *= br; b *= br;
+      // Contrast (pivot at 128)
+      r = (r - 128) * cr + 128;
+      g = (g - 128) * cr + 128;
+      b = (b - 128) * cr + 128;
+      // Saturation (blend toward gray)
+      const gray = r * 0.299 + g * 0.587 + b * 0.114;
+      r = gray + (r - gray) * sr;
+      g = gray + (g - gray) * sr;
+      b = gray + (b - gray) * sr;
+      d[i]     = Math.max(0, Math.min(255, r));
+      d[i + 1] = Math.max(0, Math.min(255, g));
+      d[i + 2] = Math.max(0, Math.min(255, b));
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
+  if (vectorize) {
+    const imageData = ctx.getImageData(0, 0, outW, outH);
+    const d = imageData.data;
+    const fgR = parseInt(vectorColor.slice(1, 3), 16);
+    const fgG = parseInt(vectorColor.slice(3, 5), 16);
+    const fgB = parseInt(vectorColor.slice(5, 7), 16);
+    for (let i = 0; i < d.length; i += 4) {
+      const lum = d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114;
+      if (lum < vectorThreshold) {
+        d[i] = fgR; d[i + 1] = fgG; d[i + 2] = fgB;
+      } else {
+        d[i] = 255; d[i + 1] = 255; d[i + 2] = 255;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+  }
+
   return canvas;
 }
 
@@ -183,4 +238,26 @@ export function processImage(source, filter, settings) {
     case 'metallic':    return applyMetallic(source, settings);
     default:            return null;
   }
+}
+
+/**
+ * Re-render the processed result at a higher export scale (for print quality).
+ * exportScale: 1 = normal, 2 = HD, 3 = ~300 DPI simulation.
+ */
+export function processImageForExport(source, filter, settings, exportScale = 1) {
+  if (filter !== 'enhancement' || exportScale === 1) {
+    return processImage(source, filter, settings);
+  }
+  // Scale up the enhancement output by the export multiplier
+  const enhanced = applyEnhancement(source, settings);
+  if (exportScale === 1) return enhanced;
+  const { w, h } = getSize(enhanced);
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(w * exportScale);
+  canvas.height = Math.round(h * exportScale);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(enhanced, 0, 0, canvas.width, canvas.height);
+  return canvas;
 }
