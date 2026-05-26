@@ -1,0 +1,105 @@
+.enh-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.enh-ctrl-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.enh-ctrl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.enh-ctrl-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.enh-ctrl-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-bright);
+  font-variant-numeric: tabular-nums;
+  min-width: 38px;
+  text-align: right;
+}
+
+.enh-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--bg-3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.enh-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg-0);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.enh-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px var(--accent-glow);
+}
+
+.enh-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg-0);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.enh-ctrl-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.panel-reset {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.btn-ghost {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 11px;
+  font-family: var(--font);
+  padding: 5px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.btn-ghost:hover {
+  color: var(--text-1);
+  border-color: var(--accent);
+}

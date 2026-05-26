@@ -1,33 +1,176 @@
-/* ---- Layout ---- */
+/* ── Design tokens ───────────────────────────────────────── */
+:root {
+  --bg-0:          #06060e;
+  --bg-1:          #0d0d1c;
+  --bg-2:          #13132a;
+  --bg-3:          #1c1c38;
+  --border-subtle: rgba(100, 100, 200, 0.12);
+  --border:        rgba(100, 100, 200, 0.24);
+  --accent:        #6366f1;
+  --accent-dim:    #4f46e5;
+  --accent-bright: #818cf8;
+  --accent-glow:   rgba(99, 102, 241, 0.25);
+  --text-0:        #f0f0f8;
+  --text-1:        #b0b0cc;
+  --text-2:        #6060a0;
+  --font:          'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+/* ── App shell ───────────────────────────────────────────── */
 .app {
   display: flex;
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  background: #0d0d1a;
-  color: #e0e0f0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: var(--font);
 }
 
+/* ── Header ──────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 52px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  gap: 16px;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.app-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-0);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.app-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+  color: var(--accent-bright);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.app-header-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.app-filter-indicator {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.app-filter-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.app-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.app-export-btn:hover:not(:disabled) {
+  background: var(--accent-dim);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.app-export-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.app-export-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Body ────────────────────────────────────────────────── */
 .app-body {
   display: flex;
   flex: 1;
   overflow: hidden;
 }
 
-.editor-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.canvas-area {
-  flex: 1;
+/* ── Footer ──────────────────────────────────────────────── */
+.app-footer {
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0d0d1a;
-  padding: 28px;
-  overflow: auto;
+  font-size: 11px;
+  color: var(--text-2);
+  background: var(--bg-1);
+  border-top: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  gap: 4px;
 }
+
+.app-footer a {
+  color: var(--accent-bright);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+

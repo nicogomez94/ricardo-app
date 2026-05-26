@@ -1,0 +1,137 @@
+.bgr-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bgr-ctrl-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bgr-ctrl-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.bgr-ctrl-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.bgr-ctrl-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-bright);
+  font-variant-numeric: tabular-nums;
+  min-width: 36px;
+  text-align: right;
+}
+
+.bgr-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--bg-3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.bgr-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg-0);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  transition: transform 0.15s;
+}
+
+.bgr-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.bgr-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg-0);
+}
+
+.bgr-ctrl-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.bgr-hint-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bgr-hint-title {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  padding: 8px 12px 6px;
+  background: var(--bg-3);
+  letter-spacing: 0.04em;
+}
+
+.bgr-checkerboard-demo {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image:
+    repeating-conic-gradient(#888 0% 25%, #ccc 0% 50%);
+  background-size: 16px 16px;
+}
+
+.bgr-checker-text {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(255,255,255,0.6);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.bgr-hint-text {
+  font-size: 11px;
+  color: var(--text-2);
+  padding: 8px 12px;
+  line-height: 1.5;
+  background: var(--bg-2);
+}
+
+.bgr-tip {
+  font-size: 11px;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+  padding: 10px 12px;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.bgr-tip strong {
+  color: var(--accent-bright);
+}
