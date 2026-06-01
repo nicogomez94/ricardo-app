@@ -1,13 +1,32 @@
 .filter-sidebar {
-  width: 280px;
-  min-width: 280px;
   height: 100%;
   background: var(--bg-1);
   border-right: 1px solid var(--border-subtle);
   display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+}
+
+/* Left nav column */
+.filter-nav-col {
+  width: 210px;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Right panel column */
+.filter-panel-col {
+  width: 270px;
+  min-width: 270px;
+  display: flex;
   flex-direction: column;
   overflow-y: auto;
   overflow-x: hidden;
+  background: var(--bg-0);
 }
 
 /* Upload section */
@@ -118,7 +137,6 @@
   flex-direction: column;
   padding: 12px 12px 8px;
   gap: 4px;
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 .filter-nav-btn {
@@ -194,6 +212,8 @@
 .sidebar-panel-container {
   padding: 14px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-info-bar {

@@ -113,74 +113,75 @@ export default function FilterSidebar({
 
   return (
     <aside className="filter-sidebar">
-      {/* Upload zone */}
-      <div className="sidebar-upload-section">
-        {uploadedImage ? (
-          <div className="upload-preview">
-            <img src={uploadedImage.src} alt="preview" className="upload-thumb" />
-            <div className="upload-preview-info">
-              <span className="upload-dim">{uploadedImage.naturalWidth} × {uploadedImage.naturalHeight}px</span>
-              <button className="upload-change-btn" onClick={() => fileRef.current?.click()}>
-                Cambiar imagen
-              </button>
+      {/* Left: filter nav column */}
+      <div className="filter-nav-col">
+        <div className="sidebar-upload-section">
+          {uploadedImage ? (
+            <div className="upload-preview">
+              <img src={uploadedImage.src} alt="preview" className="upload-thumb" />
+              <div className="upload-preview-info">
+                <span className="upload-dim">{uploadedImage.naturalWidth} × {uploadedImage.naturalHeight}px</span>
+                <button className="upload-change-btn" onClick={() => fileRef.current?.click()}>
+                  Cambiar imagen
+                </button>
+              </div>
             </div>
+          ) : (
+            <div
+              className="upload-dropzone"
+              onClick={() => fileRef.current?.click()}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              <div className="upload-icon">↑</div>
+              <span className="upload-text">Subir imagen</span>
+              <span className="upload-sub">PNG, JPG, WEBP · o arrastrá aquí</span>
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={e => handleFile(e.target.files[0])}
+          />
+        </div>
+
+        <div className="sidebar-filter-nav">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              className={`filter-nav-btn ${activeFilter === f.id ? 'active' : ''} ${!uploadedImage && f.id !== 'pligo' ? 'disabled' : ''}`}
+              onClick={() => (uploadedImage || f.id === 'pligo') && onFilterChange(f.id)}
+            >
+              <span className="filter-nav-icon">{f.icon}</span>
+              <div className="filter-nav-text">
+                <span className="filter-nav-label">{f.label}</span>
+                <span className="filter-nav-desc">{f.description}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Right: active panel column */}
+      <div className="filter-panel-col">
+        {(uploadedImage || activeFilter === 'pligo') ? (
+          <div className="sidebar-panel-container">
+            <div className="panel-info-bar">
+              <span>{FILTERS.find(f => f.id === activeFilter)?.icon}</span>
+              <span className="panel-info-bar-title">{FILTERS.find(f => f.id === activeFilter)?.label}</span>
+            </div>
+            {renderPanel()}
           </div>
         ) : (
-          <div
-            className="upload-dropzone"
-            onClick={() => fileRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-          >
-            <div className="upload-icon">↑</div>
-            <span className="upload-text">Subir imagen</span>
-            <span className="upload-sub">PNG, JPG, WEBP · o arrastrá aquí</span>
+          <div className="sidebar-empty-hint">
+            <div className="sidebar-empty-icon">🖼</div>
+            <p>Subí una imagen para empezar a usar los filtros.</p>
           </div>
         )}
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          style={{ display: 'none' }}
-          onChange={e => handleFile(e.target.files[0])}
-        />
       </div>
-
-      {/* Filter nav */}
-      <div className="sidebar-filter-nav">
-        {FILTERS.map((f) => (
-          <button
-            key={f.id}
-            className={`filter-nav-btn ${activeFilter === f.id ? 'active' : ''} ${!uploadedImage && f.id !== 'pligo' ? 'disabled' : ''}`}
-            onClick={() => (uploadedImage || f.id === 'pligo') && onFilterChange(f.id)}
-          >
-            <span className="filter-nav-icon">{f.icon}</span>
-            <div className="filter-nav-text">
-              <span className="filter-nav-label">{f.label}</span>
-              <span className="filter-nav-desc">{f.description}</span>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Active panel */}
-      {(uploadedImage || activeFilter === 'pligo') && (
-        <div className="sidebar-panel-container">
-          <div className="panel-info-bar">
-            <span>{FILTERS.find(f => f.id === activeFilter)?.icon}</span>
-            <span className="panel-info-bar-title">{FILTERS.find(f => f.id === activeFilter)?.label}</span>
-          </div>
-          {renderPanel()}
-        </div>
-      )}
-
-      {!uploadedImage && activeFilter !== 'pligo' && (
-        <div className="sidebar-empty-hint">
-          <div className="sidebar-empty-icon">🖼</div>
-          <p>Subí una imagen para empezar a usar los filtros.</p>
-        </div>
-      )}
     </aside>
   );
 }
