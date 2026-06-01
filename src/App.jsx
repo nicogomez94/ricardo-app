@@ -16,7 +16,7 @@ const DEFAULT_SETTINGS = {
     vectorColor: '#000000',
     exportQuality: 'normal',
   },
-  halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light' },
+  halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light', angle: 45, shape: 'circle' },
   bgremoval: { tolerance: 30 },
   metallic: { variant: 'gold' },
   puff: { depth: 8, highlightOpacity: 40 },

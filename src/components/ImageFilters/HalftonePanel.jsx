@@ -1,5 +1,12 @@
 import './HalftonePanel.css';
 
+const SHAPES = [
+  { id: 'circle',  label: 'Círculo',  icon: '●' },
+  { id: 'square',  label: 'Cuadrado', icon: '■' },
+  { id: 'diamond', label: 'Rombo',    icon: '◆' },
+  { id: 'line',    label: 'Línea',    icon: '≡' },
+];
+
 function SliderRow({ label, value, min, max, unit = '', step = 1, onChange }) {
   return (
     <div className="ht-ctrl-row">
@@ -21,7 +28,7 @@ function SliderRow({ label, value, min, max, unit = '', step = 1, onChange }) {
 }
 
 export default function HalftonePanel({ settings, onSettingsChange }) {
-  const { dotSize, density, contrast, invert, garmentMode } = settings;
+  const { dotSize, density, contrast, invert, garmentMode, angle = 45, shape = 'circle' } = settings;
 
   return (
     <div className="ht-panel">
@@ -30,6 +37,31 @@ export default function HalftonePanel({ settings, onSettingsChange }) {
         <p>Simula trama de semitono para serigrafía. Ideal para diseños en escala de grises.</p>
       </div>
 
+      {/* Shape selector */}
+      <div className="ht-section">
+        <span className="ht-ctrl-label">Forma del punto</span>
+        <div className="ht-shape-grid">
+          {SHAPES.map(s => (
+            <button
+              key={s.id}
+              className={`ht-shape-btn ${shape === s.id ? 'active' : ''}`}
+              onClick={() => onSettingsChange('shape', s.id)}
+            >
+              <span className="ht-shape-icon">{s.icon}</span>
+              <span className="ht-shape-label">{s.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <SliderRow
+        label="Ángulo de trama"
+        value={angle}
+        min={0}
+        max={90}
+        unit="°"
+        onChange={v => onSettingsChange('angle', v)}
+      />
       <SliderRow
         label="Tamaño de punto"
         value={dotSize}

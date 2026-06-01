@@ -4,6 +4,58 @@
   gap: 18px;
 }
 
+/* ── Section wrapper ──────────────────────────────── */
+.ht-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Shape selector ──────────────────────────────── */
+.ht-shape-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.ht-shape-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ht-shape-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-1);
+}
+
+.ht-shape-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-3));
+  color: var(--accent-bright);
+}
+
+.ht-shape-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.ht-shape-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 .ht-ctrl-row {
   display: flex;
   flex-direction: column;

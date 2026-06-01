@@ -100,6 +100,8 @@ export function applyEnhancement(source, {
 
 /**
  * Halftone — converts image into dot patterns (screen-print simulation).
+ * Supports angled grids (angle param) and multiple dot shapes for a realistic
+ * screen-printing look.
  */
 export function applyHalftone(source, {
   dotSize = 8,
@@ -107,6 +109,8 @@ export function applyHalftone(source, {
   contrast = 150,
   invert = false,
   garmentMode = 'light',
+  angle = 45,
+  shape = 'circle',
 } = {}) {
   const { w, h } = getSize(source);
 
@@ -130,28 +134,51 @@ export function applyHalftone(source, {
   ctx.fillStyle = garmentMode === 'dark' ? '#fff' : '#111';
 
   const step = Math.max(3, dotSize);
+  const rad = (angle * Math.PI) / 180;
+  const cosA = Math.cos(rad);
+  const sinA = Math.sin(rad);
 
-  for (let y = 0; y < h; y += step) {
-    for (let x = 0; x < w; x += step) {
-      const cx = x + step / 2;
-      const cy = y + step / 2;
-      const px = Math.min(Math.floor(cx), w - 1);
-      const py = Math.min(Math.floor(cy), h - 1);
+  // Iterate over a rotated grid large enough to cover the whole image
+  const imgCx = w / 2;
+  const imgCy = h / 2;
+  const halfDiag = Math.sqrt(w * w + h * h) / 2 + step;
+
+  for (let gj = -halfDiag; gj < halfDiag; gj += step) {
+    for (let gi = -halfDiag; gi < halfDiag; gi += step) {
+      // Grid cell center in image space (rotate around image center)
+      const ix = imgCx + gi * cosA - gj * sinA;
+      const iy = imgCy + gi * sinA + gj * cosA;
+
+      if (ix < 0 || ix >= w || iy < 0 || iy >= h) continue;
+
+      const px = Math.min(Math.floor(ix), w - 1);
+      const py = Math.min(Math.floor(iy), h - 1);
       const lum = data[(py * w + px) * 4] / 255; // 0 = black, 1 = white
 
       let r;
       if (garmentMode === 'dark') {
-        // White dots on dark background: bright areas → bigger dots
         r = (step / 2) * (invert ? 1 - lum : lum) * (density / 100);
       } else {
-        // Dark dots on white background: dark areas → bigger dots
         r = (step / 2) * (invert ? lum : 1 - lum) * (density / 100);
       }
 
-      if (r > 0.4) {
+      if (r < 0.4) continue;
+
+      if (shape === 'circle') {
         ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.arc(ix, iy, r, 0, Math.PI * 2);
         ctx.fill();
+      } else if (shape === 'square') {
+        ctx.fillRect(ix - r, iy - r, r * 2, r * 2);
+      } else if (shape === 'diamond') {
+        ctx.save();
+        ctx.translate(ix, iy);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillRect(-r * 0.85, -r * 0.85, r * 1.7, r * 1.7);
+        ctx.restore();
+      } else if (shape === 'line') {
+        // Horizontal lines whose thickness is proportional to luminosity
+        ctx.fillRect(ix - step * 0.5, iy - r, step * 0.98, r * 2);
       }
     }
   }
