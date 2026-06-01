@@ -5,6 +5,7 @@ import BackgroundRemovalPanel from './BackgroundRemovalPanel';
 import MetallicEffectsPanel from './MetallicEffectsPanel';
 import PuffPanel from './PuffPanel';
 import EmbroideryPanel from './EmbroideryPanel';
+import PligoPanel from './PligoPanel';
 import './FilterSidebar.css';
 
 const FILTERS = [
@@ -44,6 +45,12 @@ const FILTERS = [
     icon: '🧵',
     description: 'Textura de hilos sobre parche',
   },
+  {
+    id: 'pligo',
+    label: 'Arma tu pliego',
+    icon: '🧷',
+    description: 'DTF · 58 cm × 1 metro',
+  },
 ];
 
 export default function FilterSidebar({
@@ -55,6 +62,11 @@ export default function FilterSidebar({
   onSettingsChange,
   onApply,
   workingDimensions,
+  pligoItems,
+  processedDataUrl,
+  onAddToPligo,
+  onRemovePligoItem,
+  onClearPligo,
 }) {
   const fileRef = useRef(null);
 
@@ -94,6 +106,7 @@ export default function FilterSidebar({
       case 'metallic':    return <MetallicEffectsPanel settings={settings} onSettingsChange={onChange} />;
       case 'puff':        return <PuffPanel settings={settings} onSettingsChange={onChange} />;
       case 'embroidery':  return <EmbroideryPanel settings={settings} onSettingsChange={onChange} />;
+      case 'pligo':       return <PligoPanel items={pligoItems} processedDataUrl={processedDataUrl} onAdd={onAddToPligo} onRemove={onRemovePligoItem} onClear={onClearPligo} />;
       default:            return null;
     }
   };
@@ -139,8 +152,8 @@ export default function FilterSidebar({
         {FILTERS.map((f) => (
           <button
             key={f.id}
-            className={`filter-nav-btn ${activeFilter === f.id ? 'active' : ''} ${!uploadedImage ? 'disabled' : ''}`}
-            onClick={() => uploadedImage && onFilterChange(f.id)}
+            className={`filter-nav-btn ${activeFilter === f.id ? 'active' : ''} ${!uploadedImage && f.id !== 'pligo' ? 'disabled' : ''}`}
+            onClick={() => (uploadedImage || f.id === 'pligo') && onFilterChange(f.id)}
           >
             <span className="filter-nav-icon">{f.icon}</span>
             <div className="filter-nav-text">
@@ -152,7 +165,7 @@ export default function FilterSidebar({
       </div>
 
       {/* Active panel */}
-      {uploadedImage && (
+      {(uploadedImage || activeFilter === 'pligo') && (
         <div className="sidebar-panel-container">
           <div className="panel-info-bar">
             <span>{FILTERS.find(f => f.id === activeFilter)?.icon}</span>
@@ -162,7 +175,7 @@ export default function FilterSidebar({
         </div>
       )}
 
-      {!uploadedImage && (
+      {!uploadedImage && activeFilter !== 'pligo' && (
         <div className="sidebar-empty-hint">
           <div className="sidebar-empty-icon">🖼</div>
           <p>Subí una imagen para empezar a usar los filtros.</p>

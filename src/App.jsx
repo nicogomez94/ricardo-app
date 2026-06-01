@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { resizeToCanvas, processImage, processImageForExport } from './utils/imageFilters.js';
 import FilterSidebar from './components/ImageFilters/FilterSidebar.jsx';
 import EditorCanvas from './components/ImageFilters/EditorCanvas.jsx';
+import PligoCanvas from './components/ImageFilters/PligoCanvas.jsx';
 import './App.css';
 
 const DEFAULT_SETTINGS = {
@@ -23,13 +24,14 @@ const DEFAULT_SETTINGS = {
 };
 
 function App() {
-  const [uploadedImage, setUploadedImage] = useState(null); // original HTMLImageElement
-  const [workingCanvas, setWorkingCanvas] = useState(null); // resized canvas for processing
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [workingCanvas, setWorkingCanvas] = useState(null);
   const [originalDataUrl, setOriginalDataUrl] = useState(null);
   const [processedDataUrl, setProcessedDataUrl] = useState(null);
   const [activeFilter, setActiveFilter] = useState('enhancement');
   const [viewMode, setViewMode] = useState('processed');
   const [filterSettings, setFilterSettings] = useState(DEFAULT_SETTINGS);
+  const [pligoItems, setPligoItems] = useState([]);
 
   // Build working canvas when image is loaded
   const handleImageLoad = useCallback((imgEl) => {
@@ -75,6 +77,32 @@ function App() {
     setProcessedDataUrl(url);
   }, [workingCanvas, activeFilter, filterSettings]);
 
+  const handleAddToPligo = useCallback(() => {
+    if (!processedDataUrl) return;
+    const img = new Image();
+    img.onload = () => {
+      const w = Math.max(1, img.width - 2);
+      const h = Math.max(1, img.height - 2);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      // Crop 1px from each edge to eliminate semi-transparent border pixel
+      ctx.drawImage(img, 1, 1, w, h, 0, 0, w, h);
+      const croppedUrl = canvas.toDataURL('image/png');
+      setPligoItems(prev => [...prev, { id: Date.now(), dataUrl: croppedUrl, w, h }]);
+    };
+    img.src = processedDataUrl;
+  }, [processedDataUrl]);
+
+  const handleRemovePligoItem = useCallback((id) => {
+    setPligoItems(prev => prev.filter(it => it.id !== id));
+  }, []);
+
+  const handleClearPligo = useCallback(() => {
+    setPligoItems([]);
+  }, []);
+
   const handleExport = () => {
     if (!workingCanvas) return;
     // Determine export scale from enhancement quality setting
@@ -114,7 +142,7 @@ function App() {
         </div>
 
         <div className="app-header-center">
-          {uploadedImage && (
+          {(uploadedImage || activeFilter === 'pligo') && (
             <div className="app-filter-indicator">
               <span className="app-filter-dot" />
               <span>
@@ -125,6 +153,7 @@ function App() {
                   metallic: 'Efectos metálicos',
                   puff: 'Efecto puff',
                   embroidery: 'Bordado',
+                  pligo: 'Arma tu pliego · DTF',
                 }[activeFilter]}
               </span>
             </div>
@@ -155,15 +184,24 @@ function App() {
           onSettingsChange={handleSettingsChange}
           onApply={handleApply}
           workingDimensions={workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null}
+          pligoItems={pligoItems}
+          processedDataUrl={processedDataUrl}
+          onAddToPligo={handleAddToPligo}
+          onRemovePligoItem={handleRemovePligoItem}
+          onClearPligo={handleClearPligo}
         />
 
-        <EditorCanvas
-          originalUrl={originalDataUrl}
-          processedUrl={processedDataUrl}
-          viewMode={viewMode}
-          onViewModeChange={setViewMode}
-          activeFilter={activeFilter}
-        />
+        {activeFilter === 'pligo' ? (
+          <PligoCanvas items={pligoItems} />
+        ) : (
+          <EditorCanvas
+            originalUrl={originalDataUrl}
+            processedUrl={processedDataUrl}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            activeFilter={activeFilter}
+          />
+        )}
       </div>
 
       <footer className="app-footer">

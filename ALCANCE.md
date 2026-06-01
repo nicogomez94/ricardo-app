@@ -98,7 +98,32 @@ Formatos soportados:
 1. [efecto]-[texto].png
 2. [efecto]-diseno.png (si no hay texto)
 
-### 8. Creacion y alta de usuario
+### 8. Arma tu pliego (DTF)
+
+Herramienta para armar un pliego de impresion DTF estandar con las imagenes y disenos generados en el editor.
+
+**¿Que es un pliego DTF?**
+El DTF (Direct to Film) es una tecnica de estampado donde los disenos se imprimen sobre una lamina especial y luego se transfieren a prendas mediante calor. El pliego es la lamina sobre la que se colocan los disenos antes de enviarlos a imprimir.
+
+**Dimensiones del pliego:**
+- Ancho: 58 cm
+- Alto: 1 metro
+- Fondo: transparente
+
+**Funcionalidades incluidas:**
+
+- Visualizacion del pliego en pantalla con fondo negro para verificar el resultado.
+- El usuario puede colocar en el pliego las imagenes que trabajo en los efectos del editor.
+- Reduccion automatica de 1 pixel por bordes al subir cada imagen al pliego, para eliminar el pixel de transparencia semitransparente que puede quedar en los bordes del diseno.
+- El fondo negro del pliego permite identificar visualmente si hay transparencias parciales o semitransparencias no deseadas en los disenos colocados.
+- Exportacion del pliego completo como imagen PNG.
+
+**Por que se reduce 1 pixel:**
+Al generar disenos con efectos y transparencia, puede quedar un pixel semitransparente en el borde del recorte. Ese pixel es invisible sobre fondos claros pero visible al imprimir. La reduccion automatica de 1 pixel elimina ese borde antes de enviar a produccion.
+
+**Aclaracion:** El pliego es una herramienta de armado visual orientada a propuesta y preparacion de archivos para DTF. No garantiza la equivalencia exacta con los requisitos tecnicos del proveedor de impresion. El usuario debe validar dimensiones, colores y preparacion final con su proveedor antes de enviar a produccion.
+
+### 9. Creacion y alta de usuario
 - Pantalla o flujo de registro para crear un nuevo usuario.
 - Alta de usuario con los datos necesarios para identificarlo dentro del sistema.
 - Inicio de sesion para acceder al editor.

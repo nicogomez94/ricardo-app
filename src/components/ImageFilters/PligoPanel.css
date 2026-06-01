@@ -1,0 +1,189 @@
+.pligo-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 16px;
+}
+
+/* Add button */
+.pligo-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 16px 4px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-2));
+  color: var(--accent-bright);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.pligo-add-btn:hover:not(.disabled) {
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-2));
+}
+
+.pligo-add-btn.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  border-style: dashed;
+  border-color: var(--border);
+  color: var(--text-2);
+}
+
+/* Hint when no image loaded */
+.pligo-hint-text {
+  font-size: 11px;
+  color: var(--text-2);
+  text-align: center;
+  padding: 0 16px 4px;
+  line-height: 1.5;
+}
+
+/* Section header (item list label) */
+.pligo-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pligo-clear-btn {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.pligo-clear-btn:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08);
+}
+
+/* Thumbnail grid */
+.pligo-thumbs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 0 16px 8px;
+}
+
+.pligo-thumb-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pligo-thumb-img-wrap {
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #000;
+  border: 1px solid var(--border-subtle);
+  aspect-ratio: 1 / 1;
+}
+
+.pligo-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.pligo-thumb-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-family: var(--font);
+}
+
+.pligo-thumb-img-wrap:hover .pligo-thumb-remove {
+  opacity: 1;
+}
+
+.pligo-thumb-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px;
+}
+
+.pligo-thumb-n {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.pligo-thumb-dim {
+  font-size: 10px;
+  color: var(--text-2);
+}
+
+/* Empty hint */
+.pligo-empty-hint {
+  padding: 20px 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pligo-empty-hint p {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.pligo-empty-hint span {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* Note at bottom */
+.pligo-note {
+  margin: 8px 16px 0;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  font-size: 10.5px;
+  color: var(--text-2);
+  line-height: 1.55;
+}
+
+.pligo-note strong {
+  color: var(--text-1);
+}

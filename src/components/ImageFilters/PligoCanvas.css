@@ -1,0 +1,150 @@
+.pligo-outer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-0);
+}
+
+/* Toolbar */
+.pligo-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.pligo-toolbar-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pligo-toolbar-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: #16a34a22;
+  color: #4ade80;
+  border: 1px solid #4ade8033;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.pligo-toolbar-dim {
+  font-size: 12px;
+  color: var(--text-1);
+}
+
+.pligo-toolbar-count {
+  font-size: 11px;
+  color: var(--text-2);
+  background: var(--bg-3);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+}
+
+.pligo-toolbar-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+.pligo-hint-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #000;
+  border: 1.5px solid var(--text-2);
+  flex-shrink: 0;
+}
+
+.pligo-export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+
+.pligo-export-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.pligo-export-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.pligo-export-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Scroll area */
+.pligo-scroll-area {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+}
+
+.pligo-canvas-wrap {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(100, 200, 100, 0.15), 0 8px 40px rgba(0, 0, 0, 0.6);
+}
+
+.pligo-canvas {
+  display: block;
+  /* Native 580×1000 — scale down visually via max-width on parent */
+  max-width: 100%;
+}
+
+/* Empty overlay on canvas */
+.pligo-empty-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.pligo-empty-overlay p {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+}
+
+.pligo-empty-overlay span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.18);
+  text-align: center;
+  max-width: 220px;
+  line-height: 1.5;
+}
