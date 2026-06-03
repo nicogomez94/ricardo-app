@@ -6,6 +6,7 @@ import {
 } from './canvas.js';
 
 const ALPHA_THRESHOLD = 18;
+const MASK_EDGE_ALPHA = 0.56;
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
@@ -167,16 +168,46 @@ function makeSolidMaskCanvas(mask, w, h, color, alpha = 255) {
   const image = ctx.createImageData(w, h);
   const [r, g, b] = color;
 
-  for (let i = 0, p = 0; i < mask.length; i += 1, p += 4) {
-    if (!mask[i]) continue;
-    image.data[p] = r;
-    image.data[p + 1] = g;
-    image.data[p + 2] = b;
-    image.data[p + 3] = alpha;
+  for (let y = 0; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      const i = y * w + x;
+      const coverage = getMaskEdgeCoverage(mask, w, h, x, y);
+      if (!coverage) continue;
+
+      const p = i * 4;
+      image.data[p] = r;
+      image.data[p + 1] = g;
+      image.data[p + 2] = b;
+      image.data[p + 3] = Math.round(alpha * coverage);
+    }
   }
 
   ctx.putImageData(image, 0, 0);
   return canvas;
+}
+
+function getMaskEdgeCoverage(mask, w, h, x, y) {
+  const idx = y * w + x;
+  if (mask[idx]) return 1;
+
+  let weight = 0;
+
+  for (let dy = -1; dy <= 1; dy += 1) {
+    const ny = y + dy;
+    if (ny < 0 || ny >= h) continue;
+
+    for (let dx = -1; dx <= 1; dx += 1) {
+      if (dx === 0 && dy === 0) continue;
+
+      const nx = x + dx;
+      if (nx < 0 || nx >= w) continue;
+      if (!mask[ny * w + nx]) continue;
+
+      weight += dx === 0 || dy === 0 ? 1 : 0.55;
+    }
+  }
+
+  return Math.min(MASK_EDGE_ALPHA, weight * 0.18);
 }
 
 function boostAndPosterizeChannel(value, step) {
@@ -292,6 +323,35 @@ function tintToward(value, target, amount) {
   return clampByte(value + (target - value) * amount);
 }
 
+function getNeighborPuffColor(channels, mask, w, h, x, y) {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  let hits = 0;
+
+  for (let dy = -1; dy <= 1; dy += 1) {
+    const ny = y + dy;
+    if (ny < 0 || ny >= h) continue;
+
+    for (let dx = -1; dx <= 1; dx += 1) {
+      const nx = x + dx;
+      if (nx < 0 || nx >= w) continue;
+
+      const nIdx = ny * w + nx;
+      if (!mask[nIdx]) continue;
+
+      r += channels.red[nIdx];
+      g += channels.green[nIdx];
+      b += channels.blue[nIdx];
+      hits += 1;
+    }
+  }
+
+  return hits
+    ? [Math.round(r / hits), Math.round(g / hits), Math.round(b / hits)]
+    : [220, 220, 220];
+}
+
 function makePuffSurfaceCanvas(channels, puffMask, bevelMask, w, h, highlightOpacity) {
   const canvas = createCanvas(w, h);
   const ctx = canvas.getContext('2d');
@@ -301,11 +361,14 @@ function makePuffSurfaceCanvas(channels, puffMask, bevelMask, w, h, highlightOpa
   for (let y = 0; y < h; y += 1) {
     for (let x = 0; x < w; x += 1) {
       const idx = y * w + x;
-      if (!puffMask[idx]) continue;
+      const coverage = getMaskEdgeCoverage(puffMask, w, h, x, y);
+      if (!coverage) continue;
 
-      let r = channels.red[idx];
-      let g = channels.green[idx];
-      let b = channels.blue[idx];
+      const edgeColor = puffMask[idx]
+        ? [channels.red[idx], channels.green[idx], channels.blue[idx]]
+        : getNeighborPuffColor(channels, puffMask, w, h, x, y);
+
+      let [r, g, b] = edgeColor;
 
       const diagonal = (x / Math.max(1, w)) * 0.62 + (y / Math.max(1, h)) * 0.9;
       const topLeftEdge = (
@@ -349,7 +412,7 @@ function makePuffSurfaceCanvas(channels, puffMask, bevelMask, w, h, highlightOpa
       image.data[p] = r;
       image.data[p + 1] = g;
       image.data[p + 2] = b;
-      image.data[p + 3] = 255;
+      image.data[p + 3] = Math.round(255 * coverage);
     }
   }
 
