@@ -37,6 +37,34 @@ function cloneSettings(settings = {}) {
   return { ...settings };
 }
 
+function settingsMatch(a = {}, b = {}) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function hasUnsavedSettings(filter, settings) {
+  if (!DEFAULT_SETTINGS[filter]) return false;
+  return !settingsMatch(settings[filter], DEFAULT_SETTINGS[filter]);
+}
+
+const FILTER_LABELS = {
+  enhancement: 'Mejora',
+  halftone: 'Semitono',
+  bgremoval: 'Quitar fondo',
+  metallic: 'Metálico',
+  puff: 'Puff',
+  embroidery: 'Bordado',
+  pligo: 'Pliego',
+};
+
+function getFilterExitWarning(filter) {
+  const label = FILTER_LABELS[filter] || 'este filtro';
+  if (filter === 'enhancement') {
+    return `Los cambios de ${label} no están aplicados. Para combinarlos con otro filtro, primero usá "Aplicar mejora". Si salís ahora, se van a perder. ¿Querés continuar?`;
+  }
+
+  return `Los cambios de ${label} no se pueden mezclar con otros filtros y se van a perder al salir. ¿Querés continuar?`;
+}
+
 function App() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [workingCanvas, setWorkingCanvas] = useState(null);
@@ -93,16 +121,32 @@ function App() {
   }, []);
 
   const handleFilterChange = useCallback((filterId) => {
-    if (filterId === 'pligo' && currentProcessed) {
+    if (filterId === activeFilter) return;
+
+    const leavingFilter = activeFilter;
+    const losesChanges = hasUnsavedSettings(leavingFilter, filterSettings);
+
+    if (losesChanges) {
+      const confirmed = window.confirm(getFilterExitWarning(leavingFilter));
+      if (!confirmed) return;
+
+      setFilterSettings(prev => ({
+        ...prev,
+        [leavingFilter]: cloneSettings(DEFAULT_SETTINGS[leavingFilter]),
+      }));
+    }
+
+    if (filterId === 'pligo' && leavingFilter === 'enhancement' && currentProcessed && !losesChanges) {
       setPligoSource(currentProcessed);
     }
+
     setActiveFilter(filterId);
     setViewMode('processed');
-  }, [currentProcessed]);
+  }, [activeFilter, currentProcessed, filterSettings]);
 
-  // "Aplicar mejora": bakes the current processed result as the new working base
+  // Only enhancement is composable: it can be baked into the working base.
   const handleApply = useCallback(() => {
-    if (!workingCanvas || activeFilter === 'pligo') return;
+    if (!workingCanvas || activeFilter !== 'enhancement') return;
     const currentSettings = filterSettings[activeFilter];
     const result = processImage(workingCanvas, activeFilter, currentSettings);
     if (!result) return;
