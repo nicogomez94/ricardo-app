@@ -20,31 +20,82 @@ function SliderRow({ label, value, min, max, unit = '', step = 1, onChange }) {
   );
 }
 
+const EXPORT_QUALITY = [
+  { id: 'normal', label: 'Normal', desc: '1×' },
+  { id: 'hd', label: 'HD', desc: '2×' },
+  { id: 'print', label: '~300 DPI', desc: '3×' },
+];
+
 export default function PuffPanel({ settings, onSettingsChange }) {
-  const { depth, highlightOpacity } = settings;
+  const {
+    depth = 18,
+    highlightOpacity = 72,
+    outlineWidth = 5,
+    stickerBorder = 4,
+    solidify = 74,
+    exportQuality = 'print',
+  } = settings;
 
   return (
     <div className="puff-panel">
       <div className="panel-info">
         <span className="panel-info-icon">🫧</span>
-        <p>Simula relieve inflado 3D mediante sombras de profundidad y luz superior. Ideal para propuestas de impresión puff.</p>
+        <p>Relieve inflado con formas engrosadas, colores sólidos, contornos definidos y fondo transparente para DTF.</p>
       </div>
 
       <SliderRow
-        label="Profundidad"
+        label="Volumen puff"
         value={depth}
-        min={1}
-        max={20}
+        min={4}
+        max={36}
         onChange={v => onSettingsChange('depth', v)}
       />
       <SliderRow
-        label="Brillo superior"
+        label="Luces marcadas"
         value={highlightOpacity}
         min={0}
-        max={80}
+        max={100}
         unit="%"
         onChange={v => onSettingsChange('highlightOpacity', v)}
       />
+      <SliderRow
+        label="Contorno"
+        value={outlineWidth}
+        min={0}
+        max={18}
+        onChange={v => onSettingsChange('outlineWidth', v)}
+      />
+      <SliderRow
+        label="Borde sticker"
+        value={stickerBorder}
+        min={0}
+        max={24}
+        onChange={v => onSettingsChange('stickerBorder', v)}
+      />
+      <SliderRow
+        label="Color sólido"
+        value={solidify}
+        min={0}
+        max={100}
+        unit="%"
+        onChange={v => onSettingsChange('solidify', v)}
+      />
+
+      <div className="puff-quality-row">
+        <span className="puff-quality-title">Exportación</span>
+        <div className="puff-quality-grid">
+          {EXPORT_QUALITY.map(q => (
+            <button
+              key={q.id}
+              className={`puff-quality-btn ${exportQuality === q.id ? 'active' : ''}`}
+              onClick={() => onSettingsChange('exportQuality', q.id)}
+            >
+              <span>{q.label}</span>
+              <small>{q.desc}</small>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

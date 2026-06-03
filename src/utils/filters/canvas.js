@@ -58,13 +58,31 @@ export function clampByte(value) {
   return Math.max(0, Math.min(255, value));
 }
 
+export function getPuffPrintPadding({ depth = 18, outlineWidth = 5, stickerBorder = 4 } = {}) {
+  const safeDepth = Math.max(1, Number(depth) || 18);
+  const safeOutline = Math.max(0, Number(outlineWidth) || 0);
+  const safeBorder = Math.max(0, Number(stickerBorder) || 0);
+  return Math.ceil(safeDepth * 1.2 + safeOutline + safeBorder + 6);
+}
+
 export function getFilterOutputSize(size, filter, settings = {}) {
-  if (filter !== 'enhancement') return size;
-  const factor = Math.max(0.1, (settings.scale ?? 100) / 100);
-  return {
-    w: Math.max(1, Math.round(size.w * factor)),
-    h: Math.max(1, Math.round(size.h * factor)),
-  };
+  if (filter === 'enhancement') {
+    const factor = Math.max(0.1, (settings.scale ?? 100) / 100);
+    return {
+      w: Math.max(1, Math.round(size.w * factor)),
+      h: Math.max(1, Math.round(size.h * factor)),
+    };
+  }
+
+  if (filter === 'puff') {
+    const padding = getPuffPrintPadding(settings);
+    return {
+      w: Math.max(1, Math.round(size.w + padding * 2)),
+      h: Math.max(1, Math.round(size.h + padding * 2)),
+    };
+  }
+
+  return size;
 }
 
 export function getFilterStackOutputSize(sourceSize, steps = []) {

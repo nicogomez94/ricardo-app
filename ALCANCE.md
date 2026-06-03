@@ -21,18 +21,26 @@ Contar con una herramienta de edicion de disenos textiles que permita crear prop
 
 Efectos disponibles en esta etapa:
 1. Rhinestone
-2. Embroidery
+2. Bordado
 3. Chenille
-4. Puff Print
+4. Puff
 5. Varsity
 6. Vintage
 7. PVC / Rubber
 8. Leather Patch
+9. Arma tu pliego (DTF)
 
 #### Alcance de aplicacion de filtros
 Aplicar un filtro en esta etapa implica tomar el contenido activo del editor, ya sea texto o imagen cargada por el usuario, y renderizarlo con una estetica visual determinada. El resultado se muestra en el canvas principal y se actualiza cuando el usuario cambia el texto, la fuente, el tamano, los colores disponibles o la imagen de origen.
 
-Los filtros incluidos son efectos cerrados y prearmados. Esto significa que cada filtro tiene una logica visual definida para simular una terminacion o tecnica textil especifica, como bordado, rhinestone, chenille, puff print o leather patch. El usuario puede elegir el filtro y modificar los parametros expuestos en la interfaz, pero no editar internamente la construccion tecnica del efecto.
+Los filtros incluidos son efectos cerrados y prearmados. Esto significa que cada filtro tiene una logica visual definida para simular una terminacion o tecnica textil especifica, como bordado, rhinestone, chenille, puff, leather patch o armado de pliego DTF. El usuario puede elegir el filtro y modificar los parametros expuestos en la interfaz, pero no editar internamente la construccion tecnica del efecto.
+
+#### Alcance de Puff, Bordado y Pliego
+Estos tres componentes forman parte de la experiencia visual actual del sistema y estan pensados para acompañar la presentacion comercial del diseno:
+
+- Puff: simula un relieve inflado 3D sobre texto o imagen, con volumen marcado, luces, contornos definidos y exportacion en alta calidad.
+- Bordado: simula una textura de hilos sobre parche, con ajuste de color de hilo, color de parche y separacion visual de trama.
+- Arma tu pliego (DTF): permite reunir las piezas procesadas en un pliego de 58 cm x 1 metro, con vista previa sobre fondo negro para controlar transparencias y recorte automatico de 1 pixel en los bordes al agregar cada imagen.
 
 En terminos practicos, aplicar un filtro incluye:
 - Cambiar la apariencia visual del texto o imagen segun el efecto seleccionado.

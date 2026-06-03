@@ -29,7 +29,14 @@ const DEFAULT_SETTINGS = {
   halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light', angle: 45, shape: 'circle', backgroundMode: 'transparent' },
   bgremoval: { tolerance: 30, softness: 12, edgeCleanup: 55, sampleMode: 'auto', removeInterior: true },
   metallic: { variant: 'gold', bandSize: 62, bandIntensity: 46, shine: 68, texture: 14, angle: 12 },
-  puff: { depth: 8, highlightOpacity: 40 },
+  puff: {
+    depth: 18,
+    highlightOpacity: 72,
+    outlineWidth: 5,
+    stickerBorder: 4,
+    solidify: 74,
+    exportQuality: 'print',
+  },
   embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4 },
 };
 
@@ -186,7 +193,7 @@ function App() {
     if (!uploadedImage || !recipe) return null;
 
     const baseCanvas = renderFilterStack(uploadedImage, recipe.steps);
-    const qualityScale = recipe.filter === 'enhancement'
+    const qualityScale = recipe.settings?.exportQuality
       ? getExportQualityScale(recipe.settings.exportQuality)
       : 1;
 
