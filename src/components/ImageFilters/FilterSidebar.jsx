@@ -25,7 +25,7 @@ const FILTERS = [
     id: 'bgremoval',
     label: 'Quitar fondo',
     icon: '✂',
-    description: 'Elimina fondo blanco',
+    description: 'Bordes limpios',
   },
   {
     id: 'metallic',

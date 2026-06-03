@@ -10,6 +10,12 @@
   gap: 6px;
 }
 
+.bgr-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .bgr-ctrl-header {
   display: flex;
   justify-content: space-between;
@@ -76,6 +82,87 @@
   font-size: 10px;
   color: var(--text-2);
   margin-top: 2px;
+}
+
+.bgr-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.bgr-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 58px;
+  padding: 9px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.bgr-mode-btn:hover {
+  border-color: var(--accent);
+  color: var(--text-1);
+}
+
+.bgr-mode-btn.active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-3));
+  color: var(--accent-bright);
+}
+
+.bgr-mode-label {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bgr-mode-desc {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.bgr-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bgr-toggle-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-1);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.bgr-toggle-btn {
+  min-width: 54px;
+  padding: 4px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--bg-3);
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.bgr-toggle-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .bgr-hint-box {

@@ -27,7 +27,7 @@ const DEFAULT_SETTINGS = {
     exportQuality: 'normal',
   },
   halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light', angle: 45, shape: 'circle', backgroundMode: 'transparent' },
-  bgremoval: { tolerance: 30, softness: 10 },
+  bgremoval: { tolerance: 30, softness: 12, edgeCleanup: 55, sampleMode: 'auto', removeInterior: true },
   metallic: { variant: 'gold' },
   puff: { depth: 8, highlightOpacity: 40 },
   embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4 },
