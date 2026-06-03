@@ -20,7 +20,6 @@ function renderEmbroidery(canvas, text, opts = {}) {
     fontSize = 110,
     primary = '#f5c542',
     secondary = '#2c5f2e',
-    background = '#1a3a1c',
   } = opts;
 
   const ctx = canvas.getContext('2d');

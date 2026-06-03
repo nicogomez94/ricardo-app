@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Stage,
   Layer,
@@ -33,7 +33,6 @@ function TextNode({ el, isSelected, onSelect, onChange }) {
   const handleTransformEnd = () => {
     const node = nodeRef.current;
     const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
     node.scaleX(1);
     node.scaleY(1);
     onChange({

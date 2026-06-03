@@ -1,5 +1,5 @@
 import { darkenHex } from '../utils/colorUtils.js';
-import { drawFittedImage, getImageWhiteMask } from '../utils/imageMode.js';
+import { getImageWhiteMask } from '../utils/imageMode.js';
 
 export const rhinestoneEffect = {
   id: 'rhinestone',

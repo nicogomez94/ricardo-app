@@ -1,5 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { resizeToCanvas, processImage, processImageForExport } from './utils/imageFilters.js';
+import { useState, useMemo, useCallback } from 'react';
+import {
+  DEFAULT_PREVIEW_MAX_SIZE,
+  cloneFilterStep,
+  getCanvasSourceSize,
+  getExportQualityScale,
+  getFilterStackOutputSize,
+  processImage,
+  processImageForExport,
+  renderFilterStack,
+  resizeToCanvas,
+} from './utils/imageFilters.js';
 import FilterSidebar from './components/ImageFilters/FilterSidebar.jsx';
 import EditorCanvas from './components/ImageFilters/EditorCanvas.jsx';
 import PligoCanvas from './components/ImageFilters/PligoCanvas.jsx';
@@ -16,43 +26,64 @@ const DEFAULT_SETTINGS = {
     vectorColor: '#000000',
     exportQuality: 'normal',
   },
-  halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light', angle: 45, shape: 'circle' },
-  bgremoval: { tolerance: 30 },
+  halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light', angle: 45, shape: 'circle', backgroundMode: 'transparent' },
+  bgremoval: { tolerance: 30, softness: 10 },
   metallic: { variant: 'gold' },
   puff: { depth: 8, highlightOpacity: 40 },
   embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4 },
 };
 
+function cloneSettings(settings = {}) {
+  return { ...settings };
+}
+
 function App() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [workingCanvas, setWorkingCanvas] = useState(null);
   const [originalDataUrl, setOriginalDataUrl] = useState(null);
-  const [processedDataUrl, setProcessedDataUrl] = useState(null);
+  const [appliedSteps, setAppliedSteps] = useState([]);
+  const [baseExportDimensions, setBaseExportDimensions] = useState(null);
+  const [pligoSource, setPligoSource] = useState(null);
   const [activeFilter, setActiveFilter] = useState('enhancement');
   const [viewMode, setViewMode] = useState('processed');
   const [filterSettings, setFilterSettings] = useState(DEFAULT_SETTINGS);
   const [pligoItems, setPligoItems] = useState([]);
 
-  // Build working canvas when image is loaded
+  // Keep the uploaded image untouched. Build only a smaller preview canvas for UI speed.
   const handleImageLoad = useCallback((imgEl) => {
     setUploadedImage(imgEl);
-    const canvas = resizeToCanvas(imgEl, 900);
-    setWorkingCanvas(canvas);
-    setOriginalDataUrl(canvas.toDataURL('image/png'));
+    setAppliedSteps([]);
+    setBaseExportDimensions(getCanvasSourceSize(imgEl));
+    setPligoSource(null);
+
+    const previewCanvas = resizeToCanvas(imgEl, DEFAULT_PREVIEW_MAX_SIZE);
+    setWorkingCanvas(previewCanvas);
+    setOriginalDataUrl(previewCanvas.toDataURL('image/png'));
     setViewMode('processed');
   }, []);
 
-  // Reprocess whenever filter or settings change
-  useEffect(() => {
-    if (!workingCanvas) {
-      setProcessedDataUrl(null);
-      return;
-    }
-    const result = processImage(workingCanvas, activeFilter, filterSettings[activeFilter]);
-    if (result) {
-      setProcessedDataUrl(result.toDataURL('image/png'));
-    }
-  }, [workingCanvas, activeFilter, filterSettings]);
+  const currentProcessed = useMemo(() => {
+    if (!workingCanvas || activeFilter === 'pligo') return null;
+    const settings = filterSettings[activeFilter];
+    const result = processImage(workingCanvas, activeFilter, settings);
+    if (!result) return null;
+
+    return {
+      dataUrl: result.toDataURL('image/png'),
+      recipe: {
+        steps: appliedSteps.map(cloneFilterStep),
+        filter: activeFilter,
+        settings: cloneSettings(settings),
+      },
+    };
+  }, [workingCanvas, activeFilter, filterSettings, appliedSteps]);
+
+  const activeRecipe = activeFilter === 'pligo'
+    ? pligoSource?.recipe || null
+    : currentProcessed?.recipe || null;
+  const processedDataUrl = activeFilter === 'pligo'
+    ? pligoSource?.dataUrl || null
+    : currentProcessed?.dataUrl || null;
 
   const handleSettingsChange = useCallback((filter, key, value) => {
     setFilterSettings(prev => ({
@@ -62,23 +93,90 @@ function App() {
   }, []);
 
   const handleFilterChange = useCallback((filterId) => {
+    if (filterId === 'pligo' && currentProcessed) {
+      setPligoSource(currentProcessed);
+    }
     setActiveFilter(filterId);
     setViewMode('processed');
-  }, []);
+  }, [currentProcessed]);
 
   // "Aplicar mejora": bakes the current processed result as the new working base
   const handleApply = useCallback(() => {
-    if (!workingCanvas) return;
-    const result = processImage(workingCanvas, activeFilter, filterSettings[activeFilter]);
+    if (!workingCanvas || activeFilter === 'pligo') return;
+    const currentSettings = filterSettings[activeFilter];
+    const result = processImage(workingCanvas, activeFilter, currentSettings);
     if (!result) return;
+
+    const nextStep = {
+      filter: activeFilter,
+      settings: cloneSettings(currentSettings),
+    };
+    const nextSteps = [...appliedSteps, nextStep];
+
+    setAppliedSteps(nextSteps);
     setWorkingCanvas(result);
     const url = result.toDataURL('image/png');
     setOriginalDataUrl(url);
-    setProcessedDataUrl(url);
-  }, [workingCanvas, activeFilter, filterSettings]);
+    setPligoSource({
+      dataUrl: url,
+      recipe: {
+        steps: nextSteps.map(cloneFilterStep),
+        filter: activeFilter,
+        settings: cloneSettings(DEFAULT_SETTINGS[activeFilter]),
+      },
+    });
+
+    if (uploadedImage) {
+      setBaseExportDimensions(getFilterStackOutputSize(getCanvasSourceSize(uploadedImage), nextSteps));
+    }
+
+    if (DEFAULT_SETTINGS[activeFilter]) {
+      setFilterSettings(prev => ({
+        ...prev,
+        [activeFilter]: cloneSettings(DEFAULT_SETTINGS[activeFilter]),
+      }));
+    }
+  }, [workingCanvas, activeFilter, filterSettings, appliedSteps, uploadedImage]);
+
+  const renderRecipeExportCanvas = useCallback((recipe) => {
+    if (!uploadedImage || !recipe) return null;
+
+    const baseCanvas = renderFilterStack(uploadedImage, recipe.steps);
+    const qualityScale = recipe.filter === 'enhancement'
+      ? getExportQualityScale(recipe.settings.exportQuality)
+      : 1;
+
+    return processImageForExport(baseCanvas, recipe.filter, recipe.settings, qualityScale);
+  }, [uploadedImage]);
+
+  const renderCurrentExportCanvas = useCallback(() => {
+    if (!uploadedImage) return null;
+
+    if (activeFilter === 'pligo') {
+      return activeRecipe
+        ? renderRecipeExportCanvas(activeRecipe)
+        : renderFilterStack(uploadedImage, appliedSteps);
+    }
+
+    return activeRecipe ? renderRecipeExportCanvas(activeRecipe) : null;
+  }, [activeFilter, activeRecipe, appliedSteps, renderRecipeExportCanvas, uploadedImage]);
 
   const handleAddToPligo = useCallback(() => {
-    if (!processedDataUrl) return;
+    if (!processedDataUrl || !activeRecipe) return;
+    const exportCanvas = renderRecipeExportCanvas(activeRecipe);
+    if (exportCanvas) {
+      const w = Math.max(1, exportCanvas.width - 2);
+      const h = Math.max(1, exportCanvas.height - 2);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      // Crop 1px from each edge to eliminate semi-transparent border pixel
+      ctx.drawImage(exportCanvas, 1, 1, w, h, 0, 0, w, h);
+      setPligoItems(prev => [...prev, { id: Date.now(), dataUrl: canvas.toDataURL('image/png'), w, h }]);
+      return;
+    }
+
     const img = new Image();
     img.onload = () => {
       const w = Math.max(1, img.width - 2);
@@ -93,7 +191,7 @@ function App() {
       setPligoItems(prev => [...prev, { id: Date.now(), dataUrl: croppedUrl, w, h }]);
     };
     img.src = processedDataUrl;
-  }, [processedDataUrl]);
+  }, [activeRecipe, processedDataUrl, renderRecipeExportCanvas]);
 
   const handleRemovePligoItem = useCallback((id) => {
     setPligoItems(prev => prev.filter(it => it.id !== id));
@@ -104,18 +202,8 @@ function App() {
   }, []);
 
   const handleExport = () => {
-    if (!workingCanvas) return;
-    // Determine export scale from enhancement quality setting
-    const enh = filterSettings.enhancement;
-    const qualityScale = activeFilter === 'enhancement'
-      ? (enh.exportQuality === 'print' ? 3 : enh.exportQuality === 'hd' ? 2 : 1)
-      : 1;
-    const exportCanvas = processImageForExport(
-      workingCanvas, activeFilter, filterSettings[activeFilter], qualityScale
-    );
-    const url = exportCanvas
-      ? exportCanvas.toDataURL('image/png')
-      : (processedDataUrl || originalDataUrl);
+    const exportCanvas = renderCurrentExportCanvas();
+    const url = exportCanvas?.toDataURL('image/png') || processedDataUrl || originalDataUrl;
     if (!url) return;
     const a = document.createElement('a');
     a.href = url;
@@ -138,7 +226,7 @@ function App() {
             </svg>
           </div>
           <span className="app-name">Apparel Image Studio</span>
-          <span className="app-badge">demo</span>
+          <span className="app-badge">pro</span>
         </div>
 
         <div className="app-header-center">
@@ -183,7 +271,7 @@ function App() {
           filterSettings={filterSettings}
           onSettingsChange={handleSettingsChange}
           onApply={handleApply}
-          workingDimensions={workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null}
+          workingDimensions={baseExportDimensions || (workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null)}
           pligoItems={pligoItems}
           processedDataUrl={processedDataUrl}
           onAddToPligo={handleAddToPligo}
@@ -200,6 +288,10 @@ function App() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             activeFilter={activeFilter}
+            imageMeta={{
+              preview: workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null,
+              export: baseExportDimensions,
+            }}
           />
         )}
       </div>

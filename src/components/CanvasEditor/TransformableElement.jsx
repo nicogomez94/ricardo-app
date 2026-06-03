@@ -14,6 +14,7 @@ export default function TransformableElement({ isSelected, onSelect, children })
     }
   }, [isSelected]);
 
+  // eslint-disable-next-line react-hooks/refs
   const child = children(nodeRef, onSelect);
 
   return (

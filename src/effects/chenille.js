@@ -1,4 +1,4 @@
-import { darkenHex, lightenHex, hexToRgba } from '../utils/colorUtils.js';
+import { darkenHex, lightenHex } from '../utils/colorUtils.js';
 import { drawFittedImage } from '../utils/imageMode.js';
 
 export const chenilleEffect = {
@@ -57,7 +57,7 @@ function renderChenille(canvas, text, opts = {}) {
     ctx.save();
     drawFittedImage(ctx, opts.uploadedImage, W, H);
     ctx.restore();
-    applyFeltTexture(ctx, W, H, primary, null, null);
+    applyFeltTexture(ctx, W, H);
     return;
   }
 
@@ -85,10 +85,10 @@ function renderChenille(canvas, text, opts = {}) {
   }
 
   // Fine-grain surface texture using noise via offscreen pixel manipulation
-  applyFeltTexture(ctx, W, H, primary, fontStr, text);
+  applyFeltTexture(ctx, W, H);
 }
 
-function applyFeltTexture(ctx, W, H, color, fontStr, text) {
+function applyFeltTexture(ctx, W, H) {
   // Get current canvas data
   const imageData = ctx.getImageData(0, 0, W, H);
   const data = imageData.data;

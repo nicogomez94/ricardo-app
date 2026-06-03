@@ -1,4 +1,4 @@
-import { darkenHex, lightenHex } from '../utils/colorUtils.js';
+import { darkenHex } from '../utils/colorUtils.js';
 import { drawFittedImage } from '../utils/imageMode.js';
 
 export const puffPrintEffect = {

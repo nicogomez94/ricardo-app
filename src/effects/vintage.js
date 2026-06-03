@@ -1,4 +1,4 @@
-import { darkenHex, lightenHex } from '../utils/colorUtils.js';
+import { darkenHex } from '../utils/colorUtils.js';
 import { drawFittedImage } from '../utils/imageMode.js';
 
 export const vintageEffect = {
@@ -19,7 +19,6 @@ function renderVintage(canvas, text, opts = {}) {
     fontFamily = 'Impact',
     fontSize = 110,
     primary = '#c8860a',
-    secondary = '#5a3a1a',
     background = '#f0e6ce',
   } = opts;
 
