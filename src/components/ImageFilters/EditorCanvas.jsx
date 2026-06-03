@@ -174,6 +174,7 @@ export default function EditorCanvas({
   onViewModeChange,
   activeFilter,
   isProcessing = false,
+  showTransparentGrid = false,
   imageMeta,
 }) {
   const [comparePos, setComparePos] = useState(50);
@@ -181,7 +182,7 @@ export default function EditorCanvas({
   const stageSize = useElementSize(stageAreaRef);
   const originalImage = useLoadedImage(originalUrl);
   const processedImage = useLoadedImage(processedUrl);
-  const isCheckerboard = activeFilter === 'bgremoval' || activeFilter === 'halftone' || activeFilter === 'puff';
+  const isCheckerboard = showTransparentGrid || activeFilter === 'bgremoval' || activeFilter === 'halftone' || activeFilter === 'puff';
 
   const handleCompareMove = (e) => {
     if (!stageAreaRef.current) return;

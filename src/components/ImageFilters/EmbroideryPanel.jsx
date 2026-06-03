@@ -37,8 +37,25 @@ function ColorRow({ label, value, onChange }) {
   );
 }
 
+function ToggleRow({ label, checked, onChange }) {
+  return (
+    <label className="emb-toggle-row">
+      <span className="emb-ctrl-label">{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={e => onChange(e.target.checked)}
+        className="emb-toggle-input"
+      />
+      <span className="emb-toggle-track" aria-hidden="true">
+        <span className="emb-toggle-thumb" />
+      </span>
+    </label>
+  );
+}
+
 export default function EmbroideryPanel({ settings, onSettingsChange }) {
-  const { threadColor, patchColor, lineSpacing } = settings;
+  const { threadColor, patchColor, lineSpacing, patchEnabled = false } = settings;
 
   return (
     <div className="emb-panel">
@@ -52,11 +69,18 @@ export default function EmbroideryPanel({ settings, onSettingsChange }) {
         value={threadColor}
         onChange={v => onSettingsChange('threadColor', v)}
       />
-      <ColorRow
-        label="Color de parche"
-        value={patchColor}
-        onChange={v => onSettingsChange('patchColor', v)}
+      <ToggleRow
+        label="Fondo de parche"
+        checked={patchEnabled}
+        onChange={v => onSettingsChange('patchEnabled', v)}
       />
+      {patchEnabled && (
+        <ColorRow
+          label="Color de parche"
+          value={patchColor}
+          onChange={v => onSettingsChange('patchColor', v)}
+        />
+      )}
       <SliderRow
         label="Espaciado de hilo"
         value={lineSpacing}

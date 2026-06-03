@@ -90,3 +90,47 @@
   color: var(--text-2);
   font-family: var(--font-mono, monospace);
 }
+
+.emb-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.emb-toggle-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.emb-toggle-track {
+  width: 38px;
+  height: 22px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--bg-4, #333);
+  border: 1px solid var(--border);
+  transition: background 0.15s, border-color 0.15s;
+  flex: 0 0 auto;
+}
+
+.emb-toggle-thumb {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--text-2);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.emb-toggle-input:checked + .emb-toggle-track {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.emb-toggle-input:checked + .emb-toggle-track .emb-toggle-thumb {
+  transform: translateX(16px);
+  background: #fff;
+}

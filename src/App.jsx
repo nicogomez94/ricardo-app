@@ -37,7 +37,7 @@ const DEFAULT_SETTINGS = {
     solidify: 74,
     exportQuality: 'print',
   },
-  embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4 },
+  embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4, patchEnabled: false },
 };
 
 function cloneSettings(settings = {}) {
@@ -374,6 +374,7 @@ function App() {
             onViewModeChange={setViewMode}
             activeFilter={activeFilter}
             isProcessing={isProcessing}
+            showTransparentGrid={activeFilter === 'embroidery' && !filterSettings.embroidery.patchEnabled}
             imageMeta={{
               preview: workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null,
               export: baseExportDimensions,

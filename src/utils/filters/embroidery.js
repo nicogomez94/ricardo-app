@@ -151,6 +151,18 @@ function getThreadColor(field, idx, threadRgb, extraEdge = 0) {
   return scaleColor(tinted, shade);
 }
 
+function getEdgeThreadColor(field, idx, threadRgb) {
+  const base = getThreadColor(field, idx, threadRgb, 64);
+  const p = idx * 4;
+  const source = {
+    r: field.data[p],
+    g: field.data[p + 1],
+    b: field.data[p + 2],
+  };
+  const brightSource = lightenColor(source, 0.34);
+  return lightenColor(mixColor(base, brightSource, 0.42), 0.26);
+}
+
 function makeUnderlayCanvas(field, maskCanvas, threadRgb) {
   const { alpha, data, edge, lum, w, h } = field;
   const canvas = createCanvas(w, h);
@@ -356,15 +368,50 @@ function drawDetailStitches(ctx, field, threadRgb, spacing) {
 
       const grad = getGradientAngle(field, x, y);
       const angle = (grad === null ? Math.PI * 0.5 : grad + Math.PI * 0.5) + Math.sin((x - y) * 0.03) * 0.16;
-      const color = detail > 110
-        ? darkenColor(getThreadColor(field, idx, threadRgb, 48), 0.12)
+      const isHardEdge = alphaEdge[idx] > 0 || detail > 130;
+      const color = isHardEdge
+        ? getEdgeThreadColor(field, idx, threadRgb)
         : getThreadColor(field, idx, threadRgb, 24);
-      const alphaValue = clamp(0.3 + detail / 360, 0.34, 0.78);
+      const alphaValue = clamp(0.38 + detail / 330, 0.42, 0.9);
 
       drawThreadLine(ctx, x, y, length, angle, width, color, alphaValue);
     }
   }
 
+  ctx.restore();
+}
+
+function drawEdgeHighlightStitches(ctx, field, threadRgb, spacing) {
+  const { alpha, edge, alphaEdge, w, h } = field;
+  const step = Math.max(2, Math.round(spacing * 0.95));
+  const width = clamp(spacing * 0.24, 0.65, 1.55);
+  const length = clamp(Math.round(spacing * 2.8), 7, 16);
+  const lightAngle = -Math.PI * 0.72;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.globalCompositeOperation = 'screen';
+
+  for (let y = step; y < h - step; y += step) {
+    for (let x = step; x < w - step; x += step) {
+      const idx = y * w + x;
+      if (!alpha[idx]) continue;
+
+      const detail = Math.max(edge[idx], alphaEdge[idx]);
+      if (detail < 72) continue;
+
+      const grad = getGradientAngle(field, x, y);
+      const tangent = (grad === null ? 0 : grad + Math.PI * 0.5) + Math.sin((x + y) * 0.047) * 0.12;
+      const lightBias = grad === null ? 0.35 : clamp((Math.cos(grad - lightAngle) + 1) * 0.5, 0.28, 1);
+      const color = lightenColor(getEdgeThreadColor(field, idx, threadRgb), 0.12 + lightBias * 0.18);
+      const alphaValue = clamp(0.16 + detail / 420 + lightBias * 0.22, 0.28, 0.74);
+
+      drawThreadLine(ctx, x, y, length, tangent, width, color, alphaValue);
+    }
+  }
+
+  ctx.globalCompositeOperation = 'source-over';
   ctx.restore();
 }
 
@@ -398,6 +445,7 @@ function makeThreadCanvas(field, maskCanvas, threadRgb, spacing) {
   drawFillStitches(ctx, field, threadRgb, spacing);
   drawCrossWeave(ctx, field, threadRgb, spacing);
   drawDetailStitches(ctx, field, threadRgb, spacing);
+  drawEdgeHighlightStitches(ctx, field, threadRgb, spacing);
 
   ctx.globalCompositeOperation = 'destination-in';
   ctx.drawImage(maskCanvas, 0, 0);
@@ -410,6 +458,7 @@ export function applyEmbroidery(source, {
   threadColor = '#f5c542',
   patchColor = '#2c5f2e',
   lineSpacing = 4,
+  patchEnabled = false,
 } = {}) {
   const { w, h } = getCanvasSourceSize(source);
   const canvas = createCanvas(w, h);
@@ -418,11 +467,14 @@ export function applyEmbroidery(source, {
   const spacing = Math.max(2, Math.round(normalizeNumber(lineSpacing, 4, 2, 12)));
   const threadRgb = parseHexColor(threadColor, '#f5c542');
 
-  ctx.fillStyle = patchColor;
-  ctx.fillRect(0, 0, w, h);
-  drawPatchTexture(ctx, w, h, patchColor);
+  if (patchEnabled) {
+    ctx.fillStyle = patchColor;
+    ctx.fillRect(0, 0, w, h);
+    drawPatchTexture(ctx, w, h, patchColor);
+    drawStitchedBorder(ctx, w, h, threadColor);
+  }
+
   drawSilhouetteShadow(ctx, assets.sourceCanvas, w, h);
-  drawStitchedBorder(ctx, w, h, threadColor);
 
   ctx.drawImage(getUnderlayCanvas(assets, threadColor, threadRgb), 0, 0);
   ctx.drawImage(makeThreadCanvas(assets.field, assets.maskCanvas, threadRgb, spacing), 0, 0);
