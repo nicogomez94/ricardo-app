@@ -76,6 +76,25 @@ function processingDelayFor(filter) {
   return filter === 'embroidery' ? 55 : 0;
 }
 
+function createPligoItemId() {
+  if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function cropPligoSource(source, sourceW, sourceH) {
+  const cropX = sourceW > 2 ? 1 : 0;
+  const cropY = sourceH > 2 ? 1 : 0;
+  const w = Math.max(1, sourceW - cropX * 2);
+  const h = Math.max(1, sourceH - cropY * 2);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(source, cropX, cropY, w, h, 0, 0, w, h);
+  return { canvas, w, h };
+}
+
 function App() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [workingCanvas, setWorkingCanvas] = useState(null);
@@ -166,8 +185,16 @@ function App() {
 
     const leavingFilter = activeFilter;
     const losesChanges = hasUnsavedSettings(leavingFilter, filterSettings);
+    const movingCurrentResultToPligo =
+      filterId === 'pligo' &&
+      currentProcessed?.dataUrl &&
+      currentProcessed?.recipe?.filter === leavingFilter;
 
-    if (losesChanges) {
+    if (movingCurrentResultToPligo) {
+      setPligoSource(currentProcessed);
+    }
+
+    if (losesChanges && !movingCurrentResultToPligo) {
       const confirmed = window.confirm(getFilterExitWarning(leavingFilter));
       if (!confirmed) return;
 
@@ -177,7 +204,7 @@ function App() {
       }));
     }
 
-    if (filterId === 'pligo' && leavingFilter === 'enhancement' && currentProcessed && !losesChanges) {
+    if (filterId === 'pligo' && !movingCurrentResultToPligo && currentProcessed && !losesChanges) {
       setPligoSource(currentProcessed);
     }
 
@@ -250,33 +277,28 @@ function App() {
     if (!processedDataUrl || !activeRecipe) return;
     const exportCanvas = renderRecipeExportCanvas(activeRecipe);
     if (exportCanvas) {
-      const w = Math.max(1, exportCanvas.width - 2);
-      const h = Math.max(1, exportCanvas.height - 2);
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      // Crop 1px from each edge to eliminate semi-transparent border pixel
-      ctx.drawImage(exportCanvas, 1, 1, w, h, 0, 0, w, h);
-      setPligoItems(prev => [...prev, { id: Date.now(), dataUrl: canvas.toDataURL('image/png'), w, h }]);
+      const { canvas, w, h } = cropPligoSource(exportCanvas, exportCanvas.width, exportCanvas.height);
+      setPligoItems(prev => [...prev, { id: createPligoItemId(), dataUrl: canvas.toDataURL('image/png'), w, h }]);
       return;
     }
 
     const img = new Image();
     img.onload = () => {
-      const w = Math.max(1, img.width - 2);
-      const h = Math.max(1, img.height - 2);
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      // Crop 1px from each edge to eliminate semi-transparent border pixel
-      ctx.drawImage(img, 1, 1, w, h, 0, 0, w, h);
-      const croppedUrl = canvas.toDataURL('image/png');
-      setPligoItems(prev => [...prev, { id: Date.now(), dataUrl: croppedUrl, w, h }]);
+      const sourceW = img.naturalWidth || img.width;
+      const sourceH = img.naturalHeight || img.height;
+      const { canvas, w, h } = cropPligoSource(img, sourceW, sourceH);
+      setPligoItems(prev => [...prev, { id: createPligoItemId(), dataUrl: canvas.toDataURL('image/png'), w, h }]);
     };
     img.src = processedDataUrl;
   }, [activeRecipe, processedDataUrl, renderRecipeExportCanvas]);
+
+  const handleDuplicatePligoItem = useCallback((id) => {
+    setPligoItems(prev => {
+      const item = prev.find(it => it.id === id);
+      if (!item) return prev;
+      return [...prev, { ...item, id: createPligoItemId() }];
+    });
+  }, []);
 
   const handleRemovePligoItem = useCallback((id) => {
     setPligoItems(prev => prev.filter(it => it.id !== id));
@@ -334,16 +356,18 @@ function App() {
         </div>
 
         <div className="app-header-right">
-          <button
-            className="app-export-btn"
-            onClick={handleExport}
-            disabled={!uploadedImage}
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Exportar PNG
-          </button>
+          {activeFilter !== 'pligo' && (
+            <button
+              className="app-export-btn"
+              onClick={handleExport}
+              disabled={!uploadedImage}
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Exportar PNG
+            </button>
+          )}
         </div>
       </header>
 
@@ -360,6 +384,7 @@ function App() {
           pligoItems={pligoItems}
           processedDataUrl={processedDataUrl}
           onAddToPligo={handleAddToPligo}
+          onDuplicatePligoItem={handleDuplicatePligoItem}
           onRemovePligoItem={handleRemovePligoItem}
           onClearPligo={handleClearPligo}
         />

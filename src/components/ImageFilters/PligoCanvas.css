@@ -23,6 +23,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .pligo-toolbar-tag {
@@ -56,6 +57,8 @@
   gap: 6px;
   font-size: 11px;
   color: var(--text-2);
+  min-width: 190px;
+  justify-content: center;
 }
 
 .pligo-hint-dot {
@@ -101,24 +104,61 @@
 .pligo-scroll-area {
   flex: 1;
   overflow: auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
   padding: 24px;
+}
+
+.pligo-sheet-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.pligo-sheet {
+  width: min(580px, 100%);
+  flex-shrink: 0;
+}
+
+.pligo-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+  padding: 0 2px 8px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+.pligo-sheet-header span:first-child {
+  color: var(--text-1);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pligo-sheet-header span:last-child {
+  text-align: right;
 }
 
 .pligo-canvas-wrap {
   position: relative;
+  width: 100%;
+  aspect-ratio: 580 / 1000;
   flex-shrink: 0;
-  border-radius: 2px;
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(100, 200, 100, 0.15), 0 8px 40px rgba(0, 0, 0, 0.6);
+  background: #000;
+  box-shadow:
+    0 0 0 1px rgba(74, 222, 128, 0.16),
+    0 10px 36px rgba(0, 0, 0, 0.58);
 }
 
 .pligo-canvas {
   display: block;
-  /* Native 580×1000 — scale down visually via max-width on parent */
-  max-width: 100%;
+  width: 100%;
+  height: 100%;
 }
 
 /* Empty overlay on canvas */
@@ -147,4 +187,30 @@
   text-align: center;
   max-width: 220px;
   line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .pligo-toolbar {
+    align-items: flex-start;
+  }
+
+  .pligo-toolbar-hint {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .pligo-scroll-area {
+    padding: 16px;
+  }
+
+  .pligo-sheet-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+
+  .pligo-sheet-header span:last-child {
+    text-align: left;
+  }
 }

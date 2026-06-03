@@ -65,6 +65,7 @@ export default function FilterSidebar({
   pligoItems,
   processedDataUrl,
   onAddToPligo,
+  onDuplicatePligoItem,
   onRemovePligoItem,
   onClearPligo,
 }) {
@@ -106,7 +107,7 @@ export default function FilterSidebar({
       case 'metallic':    return <MetallicEffectsPanel settings={settings} onSettingsChange={onChange} />;
       case 'puff':        return <PuffPanel settings={settings} onSettingsChange={onChange} />;
       case 'embroidery':  return <EmbroideryPanel settings={settings} onSettingsChange={onChange} />;
-      case 'pligo':       return <PligoPanel items={pligoItems} processedDataUrl={processedDataUrl} onAdd={onAddToPligo} onRemove={onRemovePligoItem} onClear={onClearPligo} />;
+      case 'pligo':       return <PligoPanel items={pligoItems} processedDataUrl={processedDataUrl} onAdd={onAddToPligo} onDuplicate={onDuplicatePligoItem} onRemove={onRemovePligoItem} onClear={onClearPligo} />;
       default:            return null;
     }
   };

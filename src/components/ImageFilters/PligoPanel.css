@@ -45,6 +45,40 @@
   line-height: 1.5;
 }
 
+.pligo-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 16px 0;
+}
+
+.pligo-stat {
+  min-width: 0;
+  padding: 8px 7px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-2);
+}
+
+.pligo-stat span,
+.pligo-stat strong {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.pligo-stat span {
+  font-size: 9px;
+  color: var(--text-2);
+  line-height: 1.2;
+}
+
+.pligo-stat strong {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--text-0);
+  line-height: 1.2;
+}
+
 /* Section header (item list label) */
 .pligo-section-header {
   display: flex;
@@ -108,28 +142,37 @@
   display: block;
 }
 
-.pligo-thumb-remove {
+.pligo-thumb-actions {
   position: absolute;
   top: 3px;
   right: 3px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.pligo-thumb-action {
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: 5px;
   background: rgba(0, 0, 0, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #fff;
-  font-size: 13px;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s;
+  padding: 0;
   font-family: var(--font);
 }
 
-.pligo-thumb-img-wrap:hover .pligo-thumb-remove {
+.pligo-thumb-action:hover {
+  background: rgba(99, 102, 241, 0.86);
+}
+
+.pligo-thumb-img-wrap:hover .pligo-thumb-actions,
+.pligo-thumb-actions:focus-within {
   opacity: 1;
 }
 
@@ -149,6 +192,15 @@
 .pligo-thumb-dim {
   font-size: 10px;
   color: var(--text-2);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.pligo-thumb-scale {
+  font-size: 9px;
+  line-height: 1.25;
+  color: var(--accent-bright);
+  padding: 0 2px;
 }
 
 /* Empty hint */
