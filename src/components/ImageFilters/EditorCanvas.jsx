@@ -173,6 +173,7 @@ export default function EditorCanvas({
   viewMode,
   onViewModeChange,
   activeFilter,
+  isProcessing = false,
   imageMeta,
 }) {
   const [comparePos, setComparePos] = useState(50);
@@ -260,6 +261,14 @@ export default function EditorCanvas({
                 <div className="compare-tag compare-tag-before">ANTES</div>
                 <div className="compare-tag compare-tag-after">DESPUÉS</div>
               </>
+            )}
+            {isProcessing && (
+              <div className="canvas-processing-overlay" role="status" aria-live="polite">
+                <div className="canvas-processing-box">
+                  <span className="canvas-processing-spinner" />
+                  <span>{activeFilter === 'embroidery' ? 'Bordando...' : 'Procesando...'}</span>
+                </div>
+              </div>
             )}
           </>
         )}

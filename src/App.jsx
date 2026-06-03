@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   DEFAULT_PREVIEW_MAX_SIZE,
   cloneFilterStep,
@@ -72,6 +72,10 @@ function getFilterExitWarning(filter) {
   return `Los cambios de ${label} no se pueden mezclar con otros filtros y se van a perder al salir. ¿Querés continuar?`;
 }
 
+function processingDelayFor(filter) {
+  return filter === 'embroidery' ? 55 : 0;
+}
+
 function App() {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [workingCanvas, setWorkingCanvas] = useState(null);
@@ -83,6 +87,8 @@ function App() {
   const [viewMode, setViewMode] = useState('processed');
   const [filterSettings, setFilterSettings] = useState(DEFAULT_SETTINGS);
   const [pligoItems, setPligoItems] = useState([]);
+  const [currentProcessed, setCurrentProcessed] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Keep the uploaded image untouched. Build only a smaller preview canvas for UI speed.
   const handleImageLoad = useCallback((imgEl) => {
@@ -97,28 +103,56 @@ function App() {
     setViewMode('processed');
   }, []);
 
-  const currentProcessed = useMemo(() => {
-    if (!workingCanvas || activeFilter === 'pligo') return null;
-    const settings = filterSettings[activeFilter];
-    const result = processImage(workingCanvas, activeFilter, settings);
-    if (!result) return null;
+  useEffect(() => {
+    if (!workingCanvas || activeFilter === 'pligo') {
+      const timeoutId = window.setTimeout(() => {
+        setCurrentProcessed(null);
+        setIsProcessing(false);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
 
-    return {
-      dataUrl: result.toDataURL('image/png'),
-      recipe: {
-        steps: appliedSteps.map(cloneFilterStep),
-        filter: activeFilter,
-        settings: cloneSettings(settings),
-      },
+    let cancelled = false;
+    let frameId = 0;
+    let timeoutId = 0;
+    const settings = filterSettings[activeFilter];
+    const recipe = {
+      steps: appliedSteps.map(cloneFilterStep),
+      filter: activeFilter,
+      settings: cloneSettings(settings),
+    };
+
+    frameId = window.requestAnimationFrame(() => {
+      if (cancelled) return;
+      setIsProcessing(true);
+
+      timeoutId = window.setTimeout(() => {
+        if (cancelled) return;
+
+        const result = processImage(workingCanvas, activeFilter, settings);
+        if (cancelled) return;
+
+        setCurrentProcessed(result ? {
+          dataUrl: result.toDataURL('image/png'),
+          recipe,
+        } : null);
+        setIsProcessing(false);
+      }, processingDelayFor(activeFilter));
+    });
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timeoutId);
     };
   }, [workingCanvas, activeFilter, filterSettings, appliedSteps]);
 
   const activeRecipe = activeFilter === 'pligo'
     ? pligoSource?.recipe || null
-    : currentProcessed?.recipe || null;
+    : currentProcessed?.recipe?.filter === activeFilter ? currentProcessed.recipe : null;
   const processedDataUrl = activeFilter === 'pligo'
     ? pligoSource?.dataUrl || null
-    : currentProcessed?.dataUrl || null;
+    : currentProcessed?.recipe?.filter === activeFilter ? currentProcessed.dataUrl : null;
 
   const handleSettingsChange = useCallback((filter, key, value) => {
     setFilterSettings(prev => ({
@@ -339,6 +373,7 @@ function App() {
             viewMode={viewMode}
             onViewModeChange={setViewMode}
             activeFilter={activeFilter}
+            isProcessing={isProcessing}
             imageMeta={{
               preview: workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null,
               export: baseExportDimensions,
