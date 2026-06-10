@@ -90,6 +90,33 @@ function Checkerboard({ width, height, pattern }) {
   );
 }
 
+function PreviewBackgroundLayer({ width, height, pattern, previewBackground }) {
+  if (previewBackground?.type === 'color') {
+    return (
+      <Rect
+        x={0}
+        y={0}
+        width={width}
+        height={height}
+        fill={previewBackground.color}
+        listening={false}
+      />
+    );
+  }
+
+  if (previewBackground?.type === 'checker') {
+    return (
+      <Checkerboard
+        width={width}
+        height={height}
+        pattern={pattern}
+      />
+    );
+  }
+
+  return null;
+}
+
 function ImageLayer({ image, layout }) {
   if (!image || !layout) return null;
 
@@ -111,7 +138,7 @@ function KonvaWorkbench({
   viewMode,
   comparePos,
   stageSize,
-  showCheckerboard,
+  previewBackground,
 }) {
   const checkerPattern = useMemo(() => createCheckerPattern(), []);
   const displayImage = viewMode === 'processed' && processedImage ? processedImage : originalImage;
@@ -123,13 +150,12 @@ function KonvaWorkbench({
   return (
     <Stage width={stageSize.width} height={stageSize.height}>
       <Layer>
-        {showCheckerboard && (
-          <Checkerboard
-            width={stageSize.width}
-            height={stageSize.height}
-            pattern={checkerPattern}
-          />
-        )}
+        <PreviewBackgroundLayer
+          width={stageSize.width}
+          height={stageSize.height}
+          pattern={checkerPattern}
+          previewBackground={previewBackground}
+        />
 
         {viewMode === 'compare' && processedImage ? (
           <>
@@ -139,6 +165,12 @@ function KonvaWorkbench({
                 ctx.rect(0, 0, compareX, stageSize.height);
               }}
             >
+              <PreviewBackgroundLayer
+                width={stageSize.width}
+                height={stageSize.height}
+                pattern={checkerPattern}
+                previewBackground={previewBackground}
+              />
               <ImageLayer image={processedImage} layout={processedLayout} />
             </Group>
             <Line
@@ -175,6 +207,8 @@ export default function EditorCanvas({
   activeFilter,
   isProcessing = false,
   showTransparentGrid = false,
+  halftonePreviewBackground = { mode: 'transparent', color: '#111111' },
+  onHalftonePreviewBackgroundChange,
   imageMeta,
 }) {
   const [comparePos, setComparePos] = useState(50);
@@ -182,7 +216,13 @@ export default function EditorCanvas({
   const stageSize = useElementSize(stageAreaRef);
   const originalImage = useLoadedImage(originalUrl);
   const processedImage = useLoadedImage(processedUrl);
-  const isCheckerboard = showTransparentGrid || activeFilter === 'bgremoval' || activeFilter === 'halftone' || activeFilter === 'puff';
+  const isCheckerboard = showTransparentGrid || activeFilter === 'bgremoval' || activeFilter === 'puff';
+  const previewBackground = activeFilter === 'halftone'
+    ? {
+      type: halftonePreviewBackground.mode === 'color' ? 'color' : 'checker',
+      color: halftonePreviewBackground.color,
+    }
+    : isCheckerboard ? { type: 'checker' } : null;
 
   const handleCompareMove = (e) => {
     if (!stageAreaRef.current) return;
@@ -197,21 +237,50 @@ export default function EditorCanvas({
     <div className="editor-canvas">
       {originalUrl && (
         <div className="canvas-view-controls">
-          <div className="view-mode-group">
-            {[
-              { id: 'original', label: 'Original' },
-              { id: 'processed', label: 'Resultado' },
-              { id: 'compare', label: '◫ Comparar' },
-            ].map(({ id, label }) => (
-              <button
-                key={id}
-                className={`view-mode-btn ${viewMode === id ? 'active' : ''}`}
-                onClick={() => onViewModeChange(id)}
-                disabled={id === 'processed' && !processedUrl}
-              >
-                {label}
-              </button>
-            ))}
+          <div className="canvas-controls-left">
+            <div className="view-mode-group">
+              {[
+                { id: 'original', label: 'Original' },
+                { id: 'processed', label: 'Resultado' },
+                { id: 'compare', label: '◫ Comparar' },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  className={`view-mode-btn ${viewMode === id ? 'active' : ''}`}
+                  onClick={() => onViewModeChange(id)}
+                  disabled={id === 'processed' && !processedUrl}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {activeFilter === 'halftone' && (
+              <div className="halftone-preview-toolbar" aria-label="Fondo de preview de semitono">
+                <button
+                  type="button"
+                  className={`preview-bg-btn ${halftonePreviewBackground.mode === 'transparent' ? 'active' : ''}`}
+                  onClick={() => onHalftonePreviewBackgroundChange?.('mode', 'transparent')}
+                >
+                  Transparente
+                </button>
+                <button
+                  type="button"
+                  className={`preview-bg-btn ${halftonePreviewBackground.mode === 'color' ? 'active' : ''}`}
+                  onClick={() => onHalftonePreviewBackgroundChange?.('mode', 'color')}
+                >
+                  Color
+                </button>
+                <input
+                  type="color"
+                  value={halftonePreviewBackground.color}
+                  onChange={e => onHalftonePreviewBackgroundChange?.('color', e.target.value)}
+                  className="preview-bg-color"
+                  disabled={halftonePreviewBackground.mode !== 'color'}
+                  aria-label="Color de fondo de preview"
+                />
+              </div>
+            )}
           </div>
           {viewMode === 'compare' && (
             <span className="compare-hint">← Arrastrá para comparar →</span>
@@ -246,7 +315,7 @@ export default function EditorCanvas({
                 viewMode={viewMode}
                 comparePos={comparePos}
                 stageSize={stageSize}
-                showCheckerboard={isCheckerboard}
+                previewBackground={previewBackground}
               />
             </div>
             {viewMode === 'compare' && processedUrl && (
@@ -259,8 +328,8 @@ export default function EditorCanvas({
                   onChange={e => setComparePos(Number(e.target.value))}
                   className="compare-range-input"
                 />
-                <div className="compare-tag compare-tag-before">ANTES</div>
-                <div className="compare-tag compare-tag-after">DESPUÉS</div>
+                <div className="compare-tag compare-tag-before">DESPUÉS</div>
+                <div className="compare-tag compare-tag-after">ANTES</div>
               </>
             )}
             {isProcessing && (

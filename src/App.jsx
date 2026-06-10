@@ -52,6 +52,11 @@ const DEFAULT_SETTINGS = {
   embroidery: { threadColor: '#f5c542', patchColor: '#2c5f2e', lineSpacing: 4, patchEnabled: false },
 };
 
+const DEFAULT_HALFTONE_PREVIEW_BACKGROUND = {
+  mode: 'transparent',
+  color: '#111111',
+};
+
 function cloneSettings(settings = {}) {
   return { ...settings };
 }
@@ -123,6 +128,7 @@ function App() {
   const [activeFilter, setActiveFilter] = useState('enhancement');
   const [viewMode, setViewMode] = useState('processed');
   const [filterSettings, setFilterSettings] = useState(DEFAULT_SETTINGS);
+  const [halftonePreviewBackground, setHalftonePreviewBackground] = useState(DEFAULT_HALFTONE_PREVIEW_BACKGROUND);
   const [pligoItems, setPligoItems] = useState([]);
   const [currentProcessed, setCurrentProcessed] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -218,6 +224,13 @@ function App() {
     setFilterSettings(prev => ({
       ...prev,
       [filter]: { ...prev[filter], [key]: value },
+    }));
+  }, []);
+
+  const handleHalftonePreviewBackgroundChange = useCallback((key, value) => {
+    setHalftonePreviewBackground(prev => ({
+      ...prev,
+      [key]: value,
     }));
   }, []);
 
@@ -481,6 +494,8 @@ function App() {
             activeFilter={activeFilter}
             isProcessing={isProcessing}
             showTransparentGrid={activeFilter === 'embroidery' && !filterSettings.embroidery.patchEnabled}
+            halftonePreviewBackground={halftonePreviewBackground}
+            onHalftonePreviewBackgroundChange={handleHalftonePreviewBackgroundChange}
             imageMeta={{
               preview: workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null,
               export: baseExportDimensions,
