@@ -3,25 +3,25 @@ import './HalftonePanel.css';
 const METHODS = [
   {
     id: 'halftone',
-    label: 'Halftone',
+    label: 'Semitono',
     desc: 'Trama clásica de puntos',
   },
   {
     id: 'diffusion',
-    label: 'Diffusion',
-    desc: 'Grano orgánico',
+    label: 'Difusión',
+    desc: 'Textura orgánica',
   },
 ];
 
 const DOT_SHAPES = [
   {
     id: 'round',
-    label: 'Round',
+    label: 'Punto',
     desc: 'Puntos circulares clásicos',
   },
   {
     id: 'line',
-    label: 'Line',
+    label: 'Línea',
     desc: 'Líneas paralelas tipo grabado',
   },
 ];
@@ -191,7 +191,7 @@ export default function HalftonePanel({
         value={halftoneMethod}
         options={METHODS}
         onChange={v => onSettingsChange('halftoneMethod', v)}
-        description="'Halftone' usa una trama clásica. 'Diffusion' usa Floyd-Steinberg para una textura más orgánica."
+        description="Semitono usa una trama clásica. Difusión usa Floyd-Steinberg para una textura más orgánica."
       />
       <SliderRow
         label="Frecuencia de trama"
@@ -210,14 +210,14 @@ export default function HalftonePanel({
         step={0.5}
         unit="°"
         onChange={v => onSettingsChange('screenAngle', v)}
-        description="Rota la trama. 22.5° o 45° son comunes para reducir artefactos moiré. Solo aplica al método Halftone."
+        description="Rota la trama. 22.5° o 45° son comunes para reducir artefactos moiré. Solo aplica al método Semitono."
       />
       <OptionGrid
         label="Forma"
         value={dotShape}
         options={DOT_SHAPES}
         onChange={v => onSettingsChange('dotShape', v)}
-        description="'Round' produce puntos circulares clásicos. 'Line' produce una trama de líneas paralelas. Solo aplica al método Halftone."
+        description="Punto produce puntos circulares clásicos. Línea produce una trama de líneas paralelas. Solo aplica al método Semitono."
       />
 
       <div className={`ht-status ${isPending ? 'pending' : ''} ${isResultCurrent ? 'ready' : ''}`}>

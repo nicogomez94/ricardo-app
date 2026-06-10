@@ -53,7 +53,7 @@ const DEFAULT_SETTINGS = {
 };
 
 const DEFAULT_HALFTONE_PREVIEW_BACKGROUND = {
-  mode: 'transparent',
+  mode: 'color',
   color: '#111111',
 };
 

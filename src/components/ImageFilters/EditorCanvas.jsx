@@ -256,7 +256,7 @@ export default function EditorCanvas({
             </div>
 
             {activeFilter === 'halftone' && (
-              <div className="halftone-preview-toolbar" aria-label="Fondo de preview de semitono">
+              <div className="halftone-preview-toolbar" aria-label="Fondo de vista previa de semitono">
                 <button
                   type="button"
                   className={`preview-bg-btn ${halftonePreviewBackground.mode === 'transparent' ? 'active' : ''}`}
@@ -277,7 +277,7 @@ export default function EditorCanvas({
                   onChange={e => onHalftonePreviewBackgroundChange?.('color', e.target.value)}
                   className="preview-bg-color"
                   disabled={halftonePreviewBackground.mode !== 'color'}
-                  aria-label="Color de fondo de preview"
+                  aria-label="Color de fondo de vista previa"
                 />
               </div>
             )}
@@ -352,7 +352,7 @@ export default function EditorCanvas({
           {imageMeta?.export && (
             <span className="canvas-meta-dims">
               Export: {imageMeta.export.w} × {imageMeta.export.h}px
-              {imageMeta.preview && ` · Preview: ${imageMeta.preview.w} × ${imageMeta.preview.h}px`}
+              {imageMeta.preview && ` · Vista previa: ${imageMeta.preview.w} × ${imageMeta.preview.h}px`}
             </span>
           )}
           <button className="canvas-meta-switch" onClick={() => onViewModeChange(viewMode === 'processed' ? 'original' : 'processed')}>
