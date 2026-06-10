@@ -13,6 +13,7 @@ import {
 import FilterSidebar from './components/ImageFilters/FilterSidebar.jsx';
 import EditorCanvas from './components/ImageFilters/EditorCanvas.jsx';
 import PligoCanvas from './components/ImageFilters/PligoCanvas.jsx';
+import { downloadCanvasAsPng } from './utils/pngDpi.js';
 import './App.css';
 
 const DEFAULT_SETTINGS = {
@@ -26,7 +27,18 @@ const DEFAULT_SETTINGS = {
     vectorColor: '#000000',
     exportQuality: 'normal',
   },
-  halftone: { dotSize: 8, density: 80, contrast: 150, invert: false, garmentMode: 'light', angle: 45, shape: 'circle', backgroundMode: 'transparent' },
+  halftone: {
+    cropBlackBackground: true,
+    cropBlackThreshold: 25,
+    blackPoint: 16,
+    whitePoint: 100,
+    gamma: 1,
+    invertForDarkGarment: false,
+    halftoneMethod: 'halftone',
+    screenFrequency: 35,
+    screenAngle: 23.5,
+    dotShape: 'round',
+  },
   bgremoval: { tolerance: 30, softness: 12, edgeCleanup: 55, sampleMode: 'auto', removeInterior: true },
   metallic: { variant: 'gold', bandSize: 62, bandIntensity: 46, shine: 68, texture: 14, angle: 12 },
   puff: {
@@ -51,6 +63,12 @@ function settingsMatch(a = {}, b = {}) {
 function hasUnsavedSettings(filter, settings) {
   if (!DEFAULT_SETTINGS[filter]) return false;
   return !settingsMatch(settings[filter], DEFAULT_SETTINGS[filter]);
+}
+
+function resultMatchesFilter(result, filter, settings) {
+  if (!result?.recipe || result.recipe.filter !== filter) return false;
+  if (filter !== 'halftone') return true;
+  return settingsMatch(result.recipe.settings, settings.halftone);
 }
 
 const FILTER_LABELS = {
@@ -115,6 +133,8 @@ function App() {
     setAppliedSteps([]);
     setBaseExportDimensions(getCanvasSourceSize(imgEl));
     setPligoSource(null);
+    setCurrentProcessed(null);
+    setIsProcessing(false);
 
     const previewCanvas = resizeToCanvas(imgEl, DEFAULT_PREVIEW_MAX_SIZE);
     setWorkingCanvas(previewCanvas);
@@ -123,9 +143,24 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!workingCanvas || activeFilter === 'pligo') {
+    if (!workingCanvas) {
       const timeoutId = window.setTimeout(() => {
         setCurrentProcessed(null);
+        setIsProcessing(false);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    if (activeFilter === 'pligo') {
+      const timeoutId = window.setTimeout(() => {
+        setCurrentProcessed(null);
+        setIsProcessing(false);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
+
+    if (activeFilter === 'halftone') {
+      const timeoutId = window.setTimeout(() => {
         setIsProcessing(false);
       }, 0);
       return () => window.clearTimeout(timeoutId);
@@ -166,12 +201,18 @@ function App() {
     };
   }, [workingCanvas, activeFilter, filterSettings, appliedSteps]);
 
+  const currentResultMatchesActiveFilter = resultMatchesFilter(currentProcessed, activeFilter, filterSettings);
   const activeRecipe = activeFilter === 'pligo'
     ? pligoSource?.recipe || null
-    : currentProcessed?.recipe?.filter === activeFilter ? currentProcessed.recipe : null;
+    : currentResultMatchesActiveFilter ? currentProcessed.recipe : null;
   const processedDataUrl = activeFilter === 'pligo'
     ? pligoSource?.dataUrl || null
-    : currentProcessed?.recipe?.filter === activeFilter ? currentProcessed.dataUrl : null;
+    : currentResultMatchesActiveFilter ? currentProcessed.dataUrl : null;
+  const hasHalftoneResult = currentProcessed?.recipe?.filter === 'halftone';
+  const isHalftoneResultCurrent = resultMatchesFilter(currentProcessed, 'halftone', filterSettings);
+  const canExportCurrentView = activeFilter === 'halftone'
+    ? Boolean(uploadedImage && activeRecipe && !isProcessing)
+    : Boolean(uploadedImage);
 
   const handleSettingsChange = useCallback((filter, key, value) => {
     setFilterSettings(prev => ({
@@ -180,15 +221,38 @@ function App() {
     }));
   }, []);
 
+  const handleGenerateHalftone = useCallback(() => {
+    if (!workingCanvas) return;
+
+    const settings = cloneSettings(filterSettings.halftone);
+    const recipe = {
+      steps: appliedSteps.map(cloneFilterStep),
+      filter: 'halftone',
+      settings,
+    };
+
+    setIsProcessing(true);
+    window.requestAnimationFrame(() => {
+      const result = processImage(workingCanvas, 'halftone', settings);
+      setCurrentProcessed(result ? {
+        dataUrl: result.toDataURL('image/png'),
+        recipe,
+      } : null);
+      setViewMode('processed');
+      setIsProcessing(false);
+    });
+  }, [appliedSteps, filterSettings.halftone, workingCanvas]);
+
   const handleFilterChange = useCallback((filterId) => {
     if (filterId === activeFilter) return;
 
     const leavingFilter = activeFilter;
     const losesChanges = hasUnsavedSettings(leavingFilter, filterSettings);
+    const leavingHasCurrentResult = resultMatchesFilter(currentProcessed, leavingFilter, filterSettings);
     const movingCurrentResultToPligo =
       filterId === 'pligo' &&
       currentProcessed?.dataUrl &&
-      currentProcessed?.recipe?.filter === leavingFilter;
+      leavingHasCurrentResult;
 
     if (movingCurrentResultToPligo) {
       setPligoSource(currentProcessed);
@@ -204,8 +268,8 @@ function App() {
       }));
     }
 
-    if (filterId === 'pligo' && !movingCurrentResultToPligo && currentProcessed && !losesChanges) {
-      setPligoSource(currentProcessed);
+    if (filterId === 'pligo' && !movingCurrentResultToPligo) {
+      setPligoSource(null);
     }
 
     setActiveFilter(filterId);
@@ -308,13 +372,24 @@ function App() {
     setPligoItems([]);
   }, []);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const exportCanvas = renderCurrentExportCanvas();
-    const url = exportCanvas?.toDataURL('image/png') || processedDataUrl || originalDataUrl;
+    const filename = `diseño-${activeFilter}-${Date.now()}.png`;
+
+    if (exportCanvas) {
+      await downloadCanvasAsPng(exportCanvas, filename, {
+        dpi: activeRecipe?.filter === 'halftone' ? 300 : undefined,
+      });
+      return;
+    }
+
+    if (activeFilter === 'halftone') return;
+
+    const url = processedDataUrl || originalDataUrl;
     if (!url) return;
     const a = document.createElement('a');
     a.href = url;
-    a.download = `diseño-${activeFilter}-${Date.now()}.png`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -360,7 +435,7 @@ function App() {
             <button
               className="app-export-btn"
               onClick={handleExport}
-              disabled={!uploadedImage}
+              disabled={!canExportCurrentView}
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <path d="M7 1v8M4 6l3 3 3-3M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -380,6 +455,12 @@ function App() {
           filterSettings={filterSettings}
           onSettingsChange={handleSettingsChange}
           onApply={handleApply}
+          onGenerateHalftone={handleGenerateHalftone}
+          halftoneStatus={{
+            isProcessing: activeFilter === 'halftone' && isProcessing,
+            hasResult: hasHalftoneResult,
+            isResultCurrent: isHalftoneResultCurrent,
+          }}
           workingDimensions={baseExportDimensions || (workingCanvas ? { w: workingCanvas.width, h: workingCanvas.height } : null)}
           pligoItems={pligoItems}
           processedDataUrl={processedDataUrl}

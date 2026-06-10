@@ -61,6 +61,8 @@ export default function FilterSidebar({
   filterSettings,
   onSettingsChange,
   onApply,
+  onGenerateHalftone,
+  halftoneStatus,
   workingDimensions,
   pligoItems,
   processedDataUrl,
@@ -102,7 +104,7 @@ export default function FilterSidebar({
     const onChange = (key, value) => onSettingsChange(activeFilter, key, value);
     switch (activeFilter) {
       case 'enhancement': return <ImageEnhancementPanel settings={settings} onSettingsChange={onChange} onApply={onApply} workingDimensions={workingDimensions} />;
-      case 'halftone':    return <HalftonePanel settings={settings} onSettingsChange={onChange} />;
+      case 'halftone':    return <HalftonePanel settings={settings} onSettingsChange={onChange} onGenerate={onGenerateHalftone} {...halftoneStatus} />;
       case 'bgremoval':   return <BackgroundRemovalPanel settings={settings} onSettingsChange={onChange} />;
       case 'metallic':    return <MetallicEffectsPanel settings={settings} onSettingsChange={onChange} />;
       case 'puff':        return <PuffPanel settings={settings} onSettingsChange={onChange} />;

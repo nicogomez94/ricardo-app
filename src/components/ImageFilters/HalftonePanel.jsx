@@ -1,13 +1,41 @@
 import './HalftonePanel.css';
 
-const SHAPES = [
-  { id: 'circle',  label: 'Círculo',  icon: '●' },
-  { id: 'square',  label: 'Cuadrado', icon: '■' },
-  { id: 'diamond', label: 'Rombo',    icon: '◆' },
-  { id: 'line',    label: 'Línea',    icon: '≡' },
+const METHODS = [
+  {
+    id: 'halftone',
+    label: 'Halftone',
+    desc: 'Trama clásica de puntos',
+  },
+  {
+    id: 'diffusion',
+    label: 'Diffusion',
+    desc: 'Grano orgánico',
+  },
 ];
 
-function SliderRow({ label, value, min, max, unit = '', step = 1, onChange }) {
+const DOT_SHAPES = [
+  {
+    id: 'round',
+    label: 'Round',
+    desc: 'Puntos circulares clásicos',
+  },
+  {
+    id: 'line',
+    label: 'Line',
+    desc: 'Líneas paralelas tipo grabado',
+  },
+];
+
+function SliderRow({
+  label,
+  description,
+  value,
+  min,
+  max,
+  unit = '',
+  step = 1,
+  onChange,
+}) {
   return (
     <div className="ht-ctrl-row">
       <div className="ht-ctrl-header">
@@ -23,101 +51,187 @@ function SliderRow({ label, value, min, max, unit = '', step = 1, onChange }) {
         onChange={e => onChange(Number(e.target.value))}
         className="ht-slider"
       />
+      {description && <p className="ht-help-text">{description}</p>}
     </div>
   );
 }
 
-export default function HalftonePanel({ settings, onSettingsChange }) {
-  const { dotSize, density, contrast, invert, garmentMode, angle = 45, shape = 'circle' } = settings;
+function ToggleRow({ label, description, checked, onChange }) {
+  return (
+    <div className="ht-toggle-wrap">
+      <div className="ht-toggle-row">
+        <span className="ht-toggle-label">{label}</span>
+        <button
+          className={`ht-toggle-btn ${checked ? 'active' : ''}`}
+          onClick={() => onChange(!checked)}
+          type="button"
+        >
+          {checked ? 'ON' : 'OFF'}
+        </button>
+      </div>
+      {description && <p className="ht-help-text">{description}</p>}
+    </div>
+  );
+}
+
+function OptionGrid({ label, description, options, value, onChange }) {
+  return (
+    <div className="ht-section">
+      <span className="ht-ctrl-label">{label}</span>
+      <div className="ht-option-grid">
+        {options.map(option => (
+          <button
+            key={option.id}
+            type="button"
+            className={`ht-option-btn ${value === option.id ? 'active' : ''}`}
+            onClick={() => onChange(option.id)}
+          >
+            <span className="ht-option-label">{option.label}</span>
+            <span className="ht-option-desc">{option.desc}</span>
+          </button>
+        ))}
+      </div>
+      {description && <p className="ht-help-text">{description}</p>}
+    </div>
+  );
+}
+
+export default function HalftonePanel({
+  settings,
+  onSettingsChange,
+  onGenerate,
+  isProcessing = false,
+  hasResult = false,
+  isResultCurrent = false,
+}) {
+  const {
+    cropBlackBackground = true,
+    cropBlackThreshold = 25,
+    blackPoint = 16,
+    whitePoint = 100,
+    gamma = 1,
+    invertForDarkGarment = false,
+    halftoneMethod = 'halftone',
+    screenFrequency = 35,
+    screenAngle = 23.5,
+    dotShape = 'round',
+  } = settings;
+
+  const isPending = hasResult && !isResultCurrent;
+  const status = isResultCurrent
+    ? 'Resultado actualizado con estos ajustes.'
+    : isPending
+      ? 'Ajustes pendientes: generá de nuevo antes de exportar o agregar al pliego.'
+      : 'Ajustá los parámetros y generá el semitono.';
 
   return (
     <div className="ht-panel">
       <div className="panel-info">
         <span className="panel-info-icon">⬤</span>
-        <p>Simula trama de semitono para serigrafía. Ideal para diseños en escala de grises.</p>
+        <p>Genera un PNG transparente de semitono para serigrafía o print-on-demand, conservando el color original y usando la luminosidad como máscara.</p>
       </div>
 
-      {/* Shape selector */}
-      <div className="ht-section">
-        <span className="ht-ctrl-label">Forma del punto</span>
-        <div className="ht-shape-grid">
-          {SHAPES.map(s => (
-            <button
-              key={s.id}
-              className={`ht-shape-btn ${shape === s.id ? 'active' : ''}`}
-              onClick={() => onSettingsChange('shape', s.id)}
-            >
-              <span className="ht-shape-icon">{s.icon}</span>
-              <span className="ht-shape-label">{s.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <div className="ht-section-title">Recorte</div>
+      <ToggleRow
+        label="Recortar fondo negro"
+        checked={cropBlackBackground}
+        onChange={v => onSettingsChange('cropBlackBackground', v)}
+        description="Elimina automáticamente bordes casi negros alrededor de la imagen, útil para imágenes con padding oscuro."
+      />
+      <SliderRow
+        label="Umbral de recorte"
+        value={cropBlackThreshold}
+        min={0}
+        max={255}
+        onChange={v => onSettingsChange('cropBlackThreshold', v)}
+        description="Los píxeles con todos los canales RGB por debajo de este valor se tratan como fondo negro. Más alto = recorte más agresivo."
+      />
 
+      <div className="ht-divider" />
+      <div className="ht-section-title">Curva tonal (Niveles)</div>
+      <SliderRow
+        label="Punto negro"
+        value={blackPoint}
+        min={0}
+        max={255}
+        onChange={v => onSettingsChange('blackPoint', v)}
+        description="Sombras más oscuras que este valor pasan a negro puro, o transparencia en la máscara final."
+      />
+      <SliderRow
+        label="Punto blanco"
+        value={whitePoint}
+        min={0}
+        max={255}
+        onChange={v => onSettingsChange('whitePoint', v)}
+        description="Luces más claras que este valor pasan a blanco puro, u opacidad total. Más bajo = imagen general más clara."
+      />
+      <SliderRow
+        label="Gamma"
+        value={gamma}
+        min={0.1}
+        max={3}
+        step={0.1}
+        onChange={v => onSettingsChange('gamma', v)}
+        description="Controla los medios tonos como el deslizador central de Niveles. Menor a 1 oscurece, mayor a 1 aclara."
+      />
+
+      <div className="ht-divider" />
+      <div className="ht-section-title">Modo de salida</div>
+      <ToggleRow
+        label="Invertir para prenda oscura"
+        checked={invertForDarkGarment}
+        onChange={v => onSettingsChange('invertForDarkGarment', v)}
+        description="Invierte los valores tonales para imprimir correctamente tinta clara sobre una prenda oscura."
+      />
+
+      <div className="ht-divider" />
+      <div className="ht-section-title">Ajustes de semitono</div>
+      <OptionGrid
+        label="Método"
+        value={halftoneMethod}
+        options={METHODS}
+        onChange={v => onSettingsChange('halftoneMethod', v)}
+        description="'Halftone' usa una trama clásica. 'Diffusion' usa Floyd-Steinberg para una textura más orgánica."
+      />
+      <SliderRow
+        label="Frecuencia de trama"
+        value={screenFrequency}
+        min={5}
+        max={100}
+        unit=" LPI"
+        onChange={v => onSettingsChange('screenFrequency', v)}
+        description="Líneas por pulgada: menor = puntos más grandes y visibles, mayor = trama más fina. 25-45 suele funcionar bien en textiles."
+      />
       <SliderRow
         label="Ángulo de trama"
-        value={angle}
+        value={screenAngle}
         min={0}
         max={90}
+        step={0.5}
         unit="°"
-        onChange={v => onSettingsChange('angle', v)}
+        onChange={v => onSettingsChange('screenAngle', v)}
+        description="Rota la trama. 22.5° o 45° son comunes para reducir artefactos moiré. Solo aplica al método Halftone."
       />
-      <SliderRow
-        label="Tamaño de punto"
-        value={dotSize}
-        min={2}
-        max={24}
-        unit="px"
-        onChange={v => onSettingsChange('dotSize', v)}
-      />
-      <SliderRow
-        label="Densidad"
-        value={density}
-        min={20}
-        max={100}
-        unit="%"
-        onChange={v => onSettingsChange('density', v)}
-      />
-      <SliderRow
-        label="Contraste previo"
-        value={contrast}
-        min={50}
-        max={400}
-        unit="%"
-        onChange={v => onSettingsChange('contrast', v)}
+      <OptionGrid
+        label="Forma"
+        value={dotShape}
+        options={DOT_SHAPES}
+        onChange={v => onSettingsChange('dotShape', v)}
+        description="'Round' produce puntos circulares clásicos. 'Line' produce una trama de líneas paralelas. Solo aplica al método Halftone."
       />
 
-      <div className="ht-toggles">
-        <label className="ht-toggle-row">
-          <span className="ht-toggle-label">Invertir brillo</span>
-          <button
-            className={`ht-toggle-btn ${invert ? 'active' : ''}`}
-            onClick={() => onSettingsChange('invert', !invert)}
-          >
-            {invert ? 'ON' : 'OFF'}
-          </button>
-        </label>
+      <div className={`ht-status ${isPending ? 'pending' : ''} ${isResultCurrent ? 'ready' : ''}`}>
+        {status}
       </div>
 
-      <div className="ht-garment-selector">
-        <span className="ht-garment-label">Modo prenda</span>
-        <div className="ht-garment-options">
-          <button
-            className={`ht-garment-btn light ${garmentMode === 'light' ? 'active' : ''}`}
-            onClick={() => onSettingsChange('garmentMode', 'light')}
-          >
-            <span className="ht-garment-preview light-preview" />
-            Prenda clara
-          </button>
-          <button
-            className={`ht-garment-btn dark ${garmentMode === 'dark' ? 'active' : ''}`}
-            onClick={() => onSettingsChange('garmentMode', 'dark')}
-          >
-            <span className="ht-garment-preview dark-preview" />
-            Prenda oscura
-          </button>
-        </div>
-      </div>
+      <button
+        className="ht-generate-btn"
+        type="button"
+        onClick={onGenerate}
+        disabled={isProcessing}
+      >
+        {isProcessing ? 'Generando...' : 'Generar semitono'}
+      </button>
     </div>
   );
 }
