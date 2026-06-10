@@ -73,6 +73,19 @@ export default function FilterSidebar({
 }) {
   const fileRef = useRef(null);
 
+  const confirmReplaceImage = () => {
+    if (!uploadedImage) return true;
+    return window.confirm('Cambiar la imagen va a borrar el diseño actual, filtros aplicados y piezas del pliego. ¿Querés continuar?');
+  };
+
+  const openFilePicker = () => {
+    if (!confirmReplaceImage()) return;
+    if (fileRef.current) {
+      fileRef.current.value = '';
+      fileRef.current.click();
+    }
+  };
+
   const handleFile = (file) => {
     if (!file || !file.type.startsWith('image/')) return;
     const reader = new FileReader();
@@ -87,6 +100,7 @@ export default function FilterSidebar({
   const handleDrop = (e) => {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
+    if (!confirmReplaceImage()) return;
     handleFile(e.dataTransfer.files[0]);
   };
 
@@ -124,7 +138,7 @@ export default function FilterSidebar({
               <img src={uploadedImage.src} alt="preview" className="upload-thumb" />
               <div className="upload-preview-info">
                 <span className="upload-dim">{uploadedImage.naturalWidth} × {uploadedImage.naturalHeight}px</span>
-                <button className="upload-change-btn" onClick={() => fileRef.current?.click()}>
+                <button className="upload-change-btn" onClick={openFilePicker}>
                   Cambiar imagen
                 </button>
               </div>
@@ -132,7 +146,7 @@ export default function FilterSidebar({
           ) : (
             <div
               className="upload-dropzone"
-              onClick={() => fileRef.current?.click()}
+              onClick={openFilePicker}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -147,7 +161,10 @@ export default function FilterSidebar({
             type="file"
             accept="image/*"
             style={{ display: 'none' }}
-            onChange={e => handleFile(e.target.files[0])}
+            onChange={e => {
+              handleFile(e.target.files[0]);
+              e.target.value = '';
+            }}
           />
         </div>
 

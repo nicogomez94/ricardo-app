@@ -139,8 +139,12 @@ function App() {
     setAppliedSteps([]);
     setBaseExportDimensions(getCanvasSourceSize(imgEl));
     setPligoSource(null);
+    setPligoItems([]);
     setCurrentProcessed(null);
     setIsProcessing(false);
+    setFilterSettings(DEFAULT_SETTINGS);
+    setHalftonePreviewBackground(DEFAULT_HALFTONE_PREVIEW_BACKGROUND);
+    setActiveFilter('enhancement');
 
     const previewCanvas = resizeToCanvas(imgEl, DEFAULT_PREVIEW_MAX_SIZE);
     setWorkingCanvas(previewCanvas);
