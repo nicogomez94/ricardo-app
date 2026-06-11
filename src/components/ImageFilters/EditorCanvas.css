@@ -64,6 +64,55 @@
   cursor: not-allowed;
 }
 
+.zoom-toolbar {
+  display: inline-grid;
+  grid-template-columns: 28px 42px 28px;
+  align-items: center;
+  min-height: 34px;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-2);
+}
+
+.zoom-btn {
+  width: 28px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.zoom-btn:hover:not(:disabled) {
+  color: var(--text-1);
+  background: var(--bg-3);
+}
+
+.zoom-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.32;
+}
+
+.zoom-value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 26px;
+  color: var(--accent-bright);
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
 .halftone-preview-toolbar {
   display: inline-flex;
   align-items: center;

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Circle, Group, Image as KonvaImage, Layer, Line, Rect, Stage } from 'react-konva';
 import './EditorCanvas.css';
 
+const ZOOM_LEVELS = [1, 2];
+
 function useLoadedImage(src) {
   const [loaded, setLoaded] = useState({ src: null, image: null });
 
@@ -60,11 +62,11 @@ function createCheckerPattern() {
   return canvas;
 }
 
-function getImageLayout(image, stageSize) {
+function getImageLayout(image, stageSize, zoomScale = 1) {
   if (!image) return null;
   const maxW = stageSize.width;
   const maxH = stageSize.height;
-  const scale = Math.min(1, maxW / image.width, maxH / image.height);
+  const scale = Math.min(1, maxW / image.width, maxH / image.height) * zoomScale;
   const width = Math.max(1, image.width * scale);
   const height = Math.max(1, image.height * scale);
 
@@ -139,12 +141,13 @@ function KonvaWorkbench({
   comparePos,
   stageSize,
   previewBackground,
+  zoomScale,
 }) {
   const checkerPattern = useMemo(() => createCheckerPattern(), []);
   const displayImage = viewMode === 'processed' && processedImage ? processedImage : originalImage;
-  const displayLayout = getImageLayout(displayImage, stageSize);
-  const originalLayout = getImageLayout(originalImage, stageSize);
-  const processedLayout = getImageLayout(processedImage, stageSize);
+  const displayLayout = getImageLayout(displayImage, stageSize, zoomScale);
+  const originalLayout = getImageLayout(originalImage, stageSize, zoomScale);
+  const processedLayout = getImageLayout(processedImage, stageSize, zoomScale);
   const compareX = (stageSize.width * comparePos) / 100;
 
   return (
@@ -212,10 +215,12 @@ export default function EditorCanvas({
   imageMeta,
 }) {
   const [comparePos, setComparePos] = useState(50);
+  const [zoomIndex, setZoomIndex] = useState(0);
   const stageAreaRef = useRef(null);
   const stageSize = useElementSize(stageAreaRef);
   const originalImage = useLoadedImage(originalUrl);
   const processedImage = useLoadedImage(processedUrl);
+  const zoomScale = ZOOM_LEVELS[zoomIndex];
   const isCheckerboard = showTransparentGrid || activeFilter === 'bgremoval' || activeFilter === 'puff';
   const previewBackground = activeFilter === 'halftone'
     ? {
@@ -223,6 +228,13 @@ export default function EditorCanvas({
       color: halftonePreviewBackground.color,
     }
     : isCheckerboard ? { type: 'checker' } : null;
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setZoomIndex(0);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [originalUrl]);
 
   const handleCompareMove = (e) => {
     if (!stageAreaRef.current) return;
@@ -253,6 +265,28 @@ export default function EditorCanvas({
                   {label}
                 </button>
               ))}
+            </div>
+
+            <div className="zoom-toolbar" aria-label="Zoom de vista previa">
+              <button
+                type="button"
+                className="zoom-btn"
+                onClick={() => setZoomIndex(index => Math.max(0, index - 1))}
+                disabled={zoomIndex === 0}
+                aria-label="Alejar vista previa"
+              >
+                -
+              </button>
+              <span className="zoom-value">{zoomScale}x</span>
+              <button
+                type="button"
+                className="zoom-btn"
+                onClick={() => setZoomIndex(index => Math.min(ZOOM_LEVELS.length - 1, index + 1))}
+                disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+                aria-label="Acercar vista previa"
+              >
+                +
+              </button>
             </div>
 
             {activeFilter === 'halftone' && (
@@ -316,6 +350,7 @@ export default function EditorCanvas({
                 comparePos={comparePos}
                 stageSize={stageSize}
                 previewBackground={previewBackground}
+                zoomScale={zoomScale}
               />
             </div>
             {viewMode === 'compare' && processedUrl && (
